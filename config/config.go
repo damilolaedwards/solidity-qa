@@ -29,6 +29,12 @@ type ProjectConfig struct {
 
 	// CoverageReportFile describes the path to the coverage report file
 	CoverageReportFile string `json:"coverageReportFile"`
+
+	// SupportingFiles describes the paths to the files that provide additional information about the codebase
+	SupportingFiles []string `json:"supportingFiles"`
+
+	// NumInvariants describes the number of invariants to generate at a time
+	NumInvariants int `json:"numInvariants"`
 }
 
 // ReadProjectConfigFromFile reads a JSON-serialized ProjectConfig from a provided file path.

@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-func GenerateInvariantsPrompt(contractSourceCode string, testContractsSourceCode string, unitTestsSourceCode string, coverageReport string) string {
+func GenerateInvariantsPrompt(numInvariants int, contractSourceCode string, testContractsSourceCode string, unitTestsSourceCode string, coverageReport string) string {
 	var prompt strings.Builder
 
-	prompt.WriteString("Analyze the provided contract source code, test contract source code, unit tests, and coverage report. Your task is to generate comprehensive system-level and function-level invariants for each main contract. These invariants should aim to improve fuzz test code coverage and identify potential vulnerabilities.\n\n")
+	prompt.WriteString(fmt.Sprintf("Analyze the provided contract source code, test contract source code, unit tests, and coverage report. Your task is to generate %d comprehensive system-level and function-level invariants for the main contracts. These invariants should aim to improve code coverage and identify potential vulnerabilities.\n\n", numInvariants))
 
 	prompt.WriteString("Instructions:\n")
 	prompt.WriteString("1. Generate a detailed list of invariants. Be exhaustive in exploring all possible invariants and code execution paths.\n")
@@ -76,9 +76,11 @@ func TrainingPrompts() []Message {
 			Content: "You are a coverage-guided fuzzing assistant. You will be provided with contracts (referred to as main contracts) to examine for possible vulnerabilities/invariants to be tested for.\n" +
 				"Use the provided unit tests to better understand the main contracts.\n" +
 				"Use the provided test contracts to see existing fuzz tests for the main contracts.\n" +
-				"Use the provided coverage report to identify parts of the main contracts not covered by test contracts.\n" +
-				"Generate system-level invariants to improve coverage and explore every execution path.\n" +
-				"NOTE: Generate only fuzzing (system-level or function-level) invariants, not unit tests.",
+				"Use the provided coverage report to identify parts of the main contracts not covered by the invariants in the fuzz test contracts.\n" +
+				"Generate invariants to improve coverage and explore every execution path.\n" +
+				"NOTE: Generate only fuzzing (system-level or function-level) invariants, not unit tests.\n" +
+				"NOTE: Your responses should not be in markdown format or be surrounded with triple backticks.\n" +
+				"NOTE: Do not add any other text at the beginning or end of your response other than the generated invariants and code samples.",
 		},
 		{
 			Role: "system",
@@ -97,18 +99,6 @@ func TrainingPrompts() []Message {
 				"12. Testing: Insufficient test methodology or test coverage\n" +
 				"13. Timing: Race conditions or other order-of-operations flaws\n" +
 				"14. Undefined Behavior: Undefined behavior triggered within the system",
-		},
-		{
-			Role:    "system",
-			Content: "Instructions preceded by 'Note:' should be given utmost importance.",
-		},
-		{
-			Role:    "user",
-			Content: "Note: Your responses should not be in markdown format or be surrounded with triple backticks.",
-		},
-		{
-			Role:    "user",
-			Content: "Do not add any other text at the beginning or end of your response other than the generated invariants and code samples.",
 		},
 	}
 }

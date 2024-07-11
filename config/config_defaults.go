@@ -18,6 +18,8 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
+		SupportingFiles:    []string{},
+		NumInvariants:      10,
 		CoverageReportFile: "corpus/coverage_report.html",
 	}
 
