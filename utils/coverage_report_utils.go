@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"golang.org/x/net/html"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 // CoverageReport represents the structured form of the test coverage analysis.
@@ -23,14 +24,25 @@ func FilterCoverageFiles(coverageReport *CoverageReport, includePaths []string, 
 	for index, file := range coverageReport.Files {
 		for _, includePath := range includePaths {
 			if !strings.HasPrefix(file.Path, includePath) {
-				indexesToExclude = append(indexesToExclude, index)
+				// Ensure the path is not already in slices to exclude
+				if !SliceContains(indexesToExclude, index) {
+					indexesToExclude = append(indexesToExclude, index)
+				}
 				continue
 			}
 		}
+	}
 
+	coverageReport.Files = RemoveElementsFromSlice(coverageReport.Files, indexesToExclude)
+
+	indexesToExclude = make([]int, 0)
+	for index, file := range coverageReport.Files {
 		for _, excludePath := range excludePaths {
 			if strings.HasPrefix(file.Path, excludePath) {
-				indexesToExclude = append(indexesToExclude, index)
+				// Ensure the path is not already in slices to exclude
+				if !SliceContains(indexesToExclude, index) {
+					indexesToExclude = append(indexesToExclude, index)
+				}
 				continue
 			}
 		}
