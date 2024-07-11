@@ -14,7 +14,7 @@ func GenerateInvariantsPrompt(numInvariants int, contractSourceCode string, test
 	prompt.WriteString("1. Generate a detailed list of invariants. Be exhaustive in exploring all possible invariants and code execution paths.\n")
 	prompt.WriteString("2. Provide code samples for each invariant to aid in writing the tests.\n")
 	prompt.WriteString("3. Do not skip any main contract. Cover all main contracts comprehensively.\n")
-	prompt.WriteString("4. Ensure the invariants cover all smart contract vulnerability categories: Access Controls, Auditing and Logging, Authentication, Configuration, Cryptography, Data Exposure, Data Validation, Denial of Service, Error Reporting, Patching, Session Management, Testing, Timing, Undefined Behavior.\n")
+	prompt.WriteString("4. The invariants should aim at/but are not limited to covering the various smart contract vulnerability categories: Access Controls, Auditing and Logging, Authentication, Configuration, Cryptography, Data Exposure, Data Validation, Denial of Service, Error Reporting, Patching, Session Management, Testing, Timing, Undefined Behavior.\n")
 	prompt.WriteString("5. Be specific and detailed in your response. Each invariant should have a clear and concise description along with the conditions that must hold true.\n\n")
 
 	prompt.WriteString("Contract Source Code:\n")
@@ -84,7 +84,7 @@ func TrainingPrompts() []Message {
 		},
 		{
 			Role: "system",
-			Content: "The invariants you generate should cover the following smart contract vulnerability categories:\n" +
+			Content: "The invariants you generate should be aimed at covering the following smart contract vulnerability categories:\n" +
 				"1. Access Controls: Insufficient authorization or assessment of rights\n" +
 				"2. Auditing and Logging: Insufficient auditing of actions or logging of problems\n" +
 				"3. Authentication: Improper identification of users\n" +
