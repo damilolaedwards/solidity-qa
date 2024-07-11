@@ -167,10 +167,14 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 		utils.FilterCoverageFiles(&parsedCoverageReport, includePaths, excludePaths)
 	}
 
-	invariants, err := llm.AskGPT4Turbo(append(llm.TrainingPrompts(), llm.Message{
+	// Construct the messages for the LLM
+	messages := append(llm.TrainingPrompts(), llm.Message{
 		Role:    "user",
 		Content: llm.GenerateInvariantsPrompt(targetContracts, fuzzTests, unitTests, fmt.Sprintf("%v", parsedCoverageReport)),
-	}))
+	})
+
+	// Make request to LLM to generate invariants
+	invariants, err := llm.AskGPT4Turbo(messages)
 	if err != nil {
 		cmdLogger.Error("Failed to run the generate command", err)
 		return err

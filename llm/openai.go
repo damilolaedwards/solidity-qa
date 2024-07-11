@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pkoukk/tiktoken-go"
 	"io"
 	"net/http"
 	"os"
 )
+
+const OpenAIModel = "gpt-4-turbo"
 
 func AskGPT4Turbo(messages []Message) (string, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
@@ -17,8 +20,17 @@ func AskGPT4Turbo(messages []Message) (string, error) {
 
 	url := "https://api.openai.com/v1/chat/completions"
 
+	// Calculate the number of tokens to make sure we don't go over the limit
+	numTokens, err := calculateNumTokens(messages)
+	if err != nil {
+		return "", err
+	}
+	if numTokens > 128000 {
+		return "", fmt.Errorf("the number of tokens exceeds the maximum, please reduce the amount of data you are sending")
+	}
+
 	requestBody := ChatRequest{
-		Model:    "gpt-4-turbo",
+		Model:    OpenAIModel,
 		Messages: messages,
 	}
 
@@ -73,4 +85,20 @@ func AskGPT4Turbo(messages []Message) (string, error) {
 	}
 
 	return "", fmt.Errorf("no response from OpenAI API")
+}
+
+func calculateNumTokens(messages []Message) (int, error) {
+	var numTokens = 0
+
+	tkm, err := tiktoken.EncodingForModel(OpenAIModel)
+	if err != nil {
+		return numTokens, fmt.Errorf("unable to get model encoding: %v", err)
+	}
+
+	for _, message := range messages {
+		token := tkm.Encode(message.Content, nil, nil)
+		numTokens += len(token)
+	}
+
+	return numTokens, nil
 }
