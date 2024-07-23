@@ -21,17 +21,8 @@ type ProjectConfig struct {
 	// TargetContracts describes the directory that holds the contracts to be fuzzed.
 	TargetContracts DirectoryConfig `json:"targetContracts"`
 
-	// FuzzTests describes the directory that holds the fuzz tests.
-	FuzzTests DirectoryConfig `json:"fuzzTests"`
-
-	// UnitTests describes the directory that holds the unit tests.
-	UnitTests DirectoryConfig `json:"unitTests"`
-
-	// CoverageReportFile describes the path to the coverage report file
-	CoverageReportFile string `json:"coverageReportFile"`
-
-	// SupportingFiles describes the paths to the files that provide additional information about the codebase
-	SupportingFiles []string `json:"supportingFiles"`
+	// Port describes the port that the API will be running on
+	Port int `json:"port"`
 
 	// NumInvariants describes the number of invariants to generate at a time
 	NumInvariants int `json:"numInvariants"`

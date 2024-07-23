@@ -28,28 +28,5 @@ func updateProjectConfigWithInitFlags(cmd *cobra.Command, projectConfig *config.
 		}
 	}
 
-	// Update fuzz tests directory
-	if cmd.Flags().Changed("fuzz-tests-dir") {
-		projectConfig.FuzzTests.Dir, err = cmd.Flags().GetString("fuzz-tests-dir")
-		if err != nil {
-			return err
-		}
-	}
-
-	// Update unit tests directory
-	if cmd.Flags().Changed("unit-tests-dir") {
-		projectConfig.UnitTests.Dir, err = cmd.Flags().GetString("unit-tests-dir")
-		if err != nil {
-			return err
-		}
-	}
-
-	// Update coverage report file
-	if cmd.Flags().Changed("coverage-report-file") {
-		projectConfig.CoverageReportFile, err = cmd.Flags().GetString("coverage-report-file")
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }

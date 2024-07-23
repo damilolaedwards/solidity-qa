@@ -10,17 +10,7 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
-		FuzzTests: DirectoryConfig{
-			Dir:          "",
-			ExcludePaths: []string{},
-		},
-		UnitTests: DirectoryConfig{
-			Dir:          "",
-			ExcludePaths: []string{},
-		},
-		SupportingFiles:    []string{},
-		NumInvariants:      10,
-		CoverageReportFile: "corpus/coverage_report.html",
+		NumInvariants: 10,
 	}
 
 	// Return the project configuration

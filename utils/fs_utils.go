@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -42,4 +43,17 @@ func ReadDirectoryContents(dirPath string, excludePaths ...string) (string, erro
 	}
 
 	return result.String(), nil
+}
+
+// GenerateRegexFromPaths generates a regex pattern to match the given paths and their subdirectories
+func GenerateRegexFromPaths(paths []string) string {
+	var escapedPaths []string
+	for _, path := range paths {
+		// Escape special regex characters in the path
+		escapedPath := regexp.QuoteMeta(path)
+		// Add a pattern to match the path and its subdirectories
+		escapedPaths = append(escapedPaths, fmt.Sprintf("%s(/.*)?", escapedPath))
+	}
+	// Join all the individual patterns with | to create the final regex
+	return fmt.Sprintf("^(%s)$", strings.Join(escapedPaths, "|"))
 }
