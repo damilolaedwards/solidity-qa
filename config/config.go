@@ -15,17 +15,11 @@ type DirectoryConfig struct {
 }
 
 type ProjectConfig struct {
-	// Out describes the output path for the generated invariants.
-	Out string `json:"out"`
-
 	// TargetContracts describes the directory that holds the contracts to be fuzzed.
 	TargetContracts DirectoryConfig `json:"targetContracts"`
 
 	// Port describes the port that the API will be running on
 	Port int `json:"port"`
-
-	// NumInvariants describes the number of invariants to generate at a time
-	NumInvariants int `json:"numInvariants"`
 }
 
 // ReadProjectConfigFromFile reads a JSON-serialized ProjectConfig from a provided file path.
@@ -71,10 +65,6 @@ func (p *ProjectConfig) WriteToFile(path string) error {
 // Validate validates that the ProjectConfig meets certain requirements.
 // Returns an error if one occurs.
 func (p *ProjectConfig) Validate() error {
-	if p.Out == "" {
-		return errors.New("project configuration must specify an output path")
-	}
-
 	if p.TargetContracts.Dir == "" {
 		return errors.New("project configuration must specify target contracts directory")
 	}

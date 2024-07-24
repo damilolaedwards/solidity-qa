@@ -5,12 +5,10 @@ package config
 func GetDefaultProjectConfig() (*ProjectConfig, error) {
 	// Create a project configuration
 	projectConfig := &ProjectConfig{
-		Out: "invariants.txt",
 		TargetContracts: DirectoryConfig{
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
-		NumInvariants: 10,
 	}
 
 	// Return the project configuration
