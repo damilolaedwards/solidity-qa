@@ -9,6 +9,7 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
+		Port: 8080,
 	}
 
 	// Return the project configuration

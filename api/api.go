@@ -16,10 +16,12 @@ import (
 )
 
 func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
-	port := fmt.Sprint(":", config.Port)
+	var port string
 
-	if port == ":" {
+	if config.Port == 0 {
 		port = ":8080" // Default port
+	} else {
+		port = fmt.Sprint(":", config.Port)
 	}
 
 	// Create sub-logger for api module
@@ -32,7 +34,7 @@ func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
 	// Attach middleware
 	attachMiddleware(router)
 
-	// Serve the contracts on a subrouter
+	// Serve the contracts on a sub-router
 	router.HandleFunc("/contracts", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		err := json.NewEncoder(w).Encode(slitherOutput)
