@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"net"
 	"net/http"
@@ -15,7 +16,25 @@ import (
 	"syscall"
 )
 
-func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
+type API struct {
+	targetContracts string
+	slitherOutput   *types.SlitherOutput
+	logger          *logging.Logger
+}
+
+func InitializeAPI(targetContracts string, slitherOutput *types.SlitherOutput) *API {
+	// Create sub-logger for api module
+	logger := logging.NewLogger(zerolog.InfoLevel)
+	logger.AddWriter(os.Stdout, logging.UNSTRUCTURED, true)
+
+	return &API{
+		targetContracts: targetContracts,
+		slitherOutput:   slitherOutput,
+		logger:          logger,
+	}
+}
+
+func (api *API) Start(config *config.ProjectConfig) {
 	var port string
 
 	if config.Port == 0 {
@@ -31,18 +50,15 @@ func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
 	// Create a new router
 	router := mux.NewRouter()
 
-	// Attach middleware
-	attachMiddleware(router)
-
-	// Serve the contracts on a sub-router
-	router.HandleFunc("/contracts", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		err := json.NewEncoder(w).Encode(slitherOutput)
-		if err != nil {
-			logger.Error("Failed to encode contracts: ", err)
-			return
-		}
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowCredentials: true,
 	})
+
+	// Attach routes
+	api.attachRoutes(router)
+
+	handler := c.Handler(router)
 
 	var listener net.Listener
 	var err error
@@ -72,7 +88,7 @@ func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
 	// Start the server in a separate goroutine
 	serverErrorChan := make(chan error, 1)
 	go func() {
-		serverErrorChan <- http.Serve(listener, router)
+		serverErrorChan <- http.Serve(listener, handler)
 	}()
 
 	// Gracefully shutdown the server if a server error is encountered
@@ -87,6 +103,19 @@ func Start(config *config.ProjectConfig, slitherOutput *types.SlitherOutput) {
 	case err := <-serverErrorChan:
 		logger.Error("Server error: ", err)
 	}
+}
+
+func (api *API) attachRoutes(router *mux.Router) {
+	router.HandleFunc("/contracts", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		err := json.NewEncoder(w).Encode(api.slitherOutput)
+		if err != nil {
+			api.logger.Error("Failed to encode contracts: ", err)
+			return
+		}
+	})
+
+	attachConversationRoutes(router, api.targetContracts)
 }
 
 func incrementPort(port string) string {

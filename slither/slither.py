@@ -16,6 +16,7 @@ def get_functions_data(functions):
 
     for function in functions:
         functions_data.append({
+            "id": function.id,
             "name": function.name,
             "visibility": function.visibility,
             "view": function.view,
@@ -37,6 +38,7 @@ def get_functions_data(functions):
 
 def get_inheritance_tree(contract):
     inheritance_tree = {
+        "id": contract.id,
         "name": contract.name,
         "functions": get_functions_data(contract.functions),
         "inherited_contracts": []

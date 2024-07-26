@@ -5,6 +5,7 @@ import (
 	"assistant/config"
 	"assistant/logging/colors"
 	"assistant/slither"
+	"assistant/utils"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -119,21 +120,14 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 	}
 	cmdLogger.Info("Successfully ran Slither on the target contracts directory")
 
-	// Write contracts to a file
-	file, err := os.OpenFile("contracts.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	targetContracts, err := utils.ReadDirectoryContents(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths...)
 	if err != nil {
+		cmdLogger.Error("Failed to run the generate command", err)
 		return err
 	}
 
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			cmdLogger.Error("Error closing contracts.json", err)
-		}
-	}(file)
-
-	// Start the API to serve
-	api.Start(projectConfig, slitherOutput)
+	// Start the API
+	api.InitializeAPI(targetContracts, slitherOutput).Start(projectConfig)
 
 	return nil
 }

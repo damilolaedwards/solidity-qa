@@ -8,6 +8,7 @@ type Parameter struct {
 }
 
 type Function struct {
+	ID         int         `json:"id"`
 	Name       string      `json:"name"`
 	Visibility string      `json:"visibility"`
 	View       bool        `json:"view"`
@@ -18,6 +19,7 @@ type Function struct {
 }
 
 type Contract struct {
+	ID                 int        `json:"id"`
 	Name               string     `json:"name"`
 	Functions          []Function `json:"functions"`
 	InheritedContracts []Contract `json:"inherited_contracts"`

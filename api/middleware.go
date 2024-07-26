@@ -5,20 +5,23 @@ import (
 	"net/http"
 )
 
-func setHeaders(next http.Handler) http.Handler {
+func enableCORS(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Set default headers
-		w.Header().Set("Content-Type", "application/json")
-
-		// Handle CORS headers
+		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		next.ServeHTTP(w, r)
+		// If the request method is OPTIONS, return a 200 status (pre-flight request)
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		handler.ServeHTTP(w, r)
 	})
 }
 
 func attachMiddleware(router *mux.Router) {
-	router.Use(setHeaders)
+	router.Use(enableCORS)
 }

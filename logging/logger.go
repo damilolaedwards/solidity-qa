@@ -150,7 +150,7 @@ func (l *Logger) AddWriter(writer io.Writer, format LogFormat, colored bool) {
 
 // RemoveWriter will remove a writer from the list of writers that the logger manages. The writer will be either removed
 // from the list of structured, unstructured and colored, or unstructured and un-colored writers. If the same writer
-// is receiving multiple types of log output (e.g. structured and unstructured with color) then this function must be called
+// is receiving multiple dto of log output (e.g. structured and unstructured with color) then this function must be called
 // multiple times. If the writer does not exist in any list, then this function is a no-op.
 func (l *Logger) RemoveWriter(writer io.Writer, format LogFormat, colored bool) {
 	// First, try to remove the writer from the list of structured writers
