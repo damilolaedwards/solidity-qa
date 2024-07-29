@@ -122,7 +122,7 @@ func filterSlitherOutput(contracts []types.Contract, targetDir string, excludePa
 		excluded := false
 		for _, excludePath := range excludePaths {
 			excludePath = filepath.Clean(excludePath)
-			if contractPath == excludePath || strings.HasPrefix(contractPath, excludePath+string(filepath.Separator)) {
+			if contractPath == excludePath || strings.HasPrefix(contractPath, excludePath+string(filepath.Separator)) || strings.HasPrefix(contractPath, filepath.Join(targetDir, excludePath)+string(filepath.Separator)) {
 				excluded = true
 				break
 			}
