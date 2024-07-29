@@ -20,6 +20,7 @@ type Function struct {
 
 type Contract struct {
 	ID                 int        `json:"id"`
+	Path               string     `json:"path"`
 	Name               string     `json:"name"`
 	Functions          []Function `json:"functions"`
 	InheritedContracts []Contract `json:"inherited_contracts"`

@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -65,8 +64,7 @@ func RunSlitherOnDir(dirPath string, excludePaths ...string) (*types.SlitherOutp
 	// Create a temporary file to hold the slither output
 	tmpfile, err := os.CreateTemp("", "slither-output-*.json")
 	if err != nil {
-		fmt.Println("Error creating temporary file:", err)
-		return nil, nil
+		return nil, fmt.Errorf("error creating temporary file: %v", err)
 	}
 	defer func(name string) {
 		err := os.Remove(name)
@@ -75,68 +73,79 @@ func RunSlitherOnDir(dirPath string, excludePaths ...string) (*types.SlitherOutp
 		}
 	}(tmpfile.Name()) // Clean up
 
-	err = filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	// Check if provided directory is a directory
+	info, err := os.Stat(dirPath)
+	if err != nil || !info.IsDir() {
+		return nil, fmt.Errorf("unable to read directory")
+	}
 
-		// Check if the current path should be excluded
-		for _, excludePath := range excludePaths {
-			if strings.HasPrefix(path, excludePath) || strings.HasPrefix(path, filepath.Join(dirPath, excludePath)) {
-				return filepath.SkipDir
-			}
-		}
-
-		// If it's a file, run slither on this path
-		if !info.IsDir() {
-			err = RunSlitherOnTarget(path, tmpfile)
-			if err != nil {
-				return err
-			}
-
-			// Read the contents of the temporary file
-			file, err := os.ReadFile(tmpfile.Name())
-			if err != nil {
-				return err
-			}
-
-			// Parse the slither output
-			var contractsInFile []types.Contract
-			err = json.Unmarshal(file, &contractsInFile)
-			if err != nil {
-				return err
-			}
-
-			// Append the contracts to the result
-			contracts = append(contracts, contractsInFile...)
-
-			// Clear the temporary file
-			err = os.Truncate(tmpfile.Name(), 0)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-
+	// Run slither on project
+	err = RunSlitherOnTarget(".", tmpfile)
 	if err != nil {
 		return nil, err
 	}
+
+	// Read the contents of the temporary file
+	file, err := os.ReadFile(tmpfile.Name())
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the slither output
+	err = json.Unmarshal(file, &contracts)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter slither output
+	contracts = filterSlitherOutput(contracts, dirPath, excludePaths)
 
 	return &types.SlitherOutput{
 		Contracts: contracts,
 	}, nil
 }
 
-func GenerateRegexFromPaths(paths []string) string {
-	var escapedPaths []string
-	for _, path := range paths {
-		// Escape special regex characters in the path
-		escapedPath := regexp.QuoteMeta(path)
-		// Add a pattern to match the path and its subdirectories
-		escapedPaths = append(escapedPaths, fmt.Sprintf("%s(/.*)?", escapedPath))
+func filterSlitherOutput(contracts []types.Contract, targetDir string, excludePaths []string) []types.Contract {
+	var filteredContracts []types.Contract
+
+	for _, contract := range contracts {
+		// Normalize paths
+		contractPath := filepath.Clean(contract.Path)
+		targetDir = filepath.Clean(targetDir)
+
+		// Check if contract path is under target directory
+		if !strings.HasPrefix(contractPath, targetDir) {
+			continue
+		}
+
+		// Check if contract path or its parent directory is in exclude paths
+		excluded := false
+		for _, excludePath := range excludePaths {
+			excludePath = filepath.Clean(excludePath)
+			if contractPath == excludePath || strings.HasPrefix(contractPath, excludePath+string(filepath.Separator)) {
+				excluded = true
+				break
+			}
+
+			// Check parent directories
+			parentDir := filepath.Dir(contractPath)
+			for parentDir != "." && parentDir != string(filepath.Separator) {
+				if parentDir == excludePath {
+					excluded = true
+					break
+				}
+				parentDir = filepath.Dir(parentDir)
+			}
+
+			if excluded {
+				break
+			}
+		}
+
+		if !excluded {
+			filteredContracts = append(filteredContracts, contract)
+		}
 	}
-	// Join all the individual patterns with | to create the final regex
-	return fmt.Sprintf("^(%s)$", strings.Join(escapedPaths, "|"))
+
+	return filteredContracts
 }

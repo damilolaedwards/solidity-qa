@@ -1,6 +1,5 @@
 import sys
 import json
-import slither.slither
 from slither.slither import Slither
 
 if len(sys.argv) != 3:
@@ -40,6 +39,7 @@ def get_inheritance_tree(contract):
     inheritance_tree = {
         "id": contract.id,
         "name": contract.name,
+        "path": contract.file_scope.filename.relative,
         "functions": get_functions_data(contract.functions),
         "inherited_contracts": []
     }
@@ -57,7 +57,7 @@ try:
 
     contracts_data = []
     for contract in slither.contracts:
-        if not contract.is_interface:
+        if not contract.is_interface and not contract.is_library:
             contracts_data.append(get_inheritance_tree(contract))
 
     with open(output_file, "w") as file:

@@ -19,7 +19,6 @@ const TokenLimitExceeded = "the number of tokens exceeds the maximum, please red
 
 var apiKey = os.Getenv("OPENAI_API_KEY")
 
-// TODO: Allow the cancelling of a request
 func AskModel(messages []Message, ctx context.Context) (string, error) {
 	if apiKey == "" {
 		return "", fmt.Errorf("OPENAI_API_KEY environment variable not set")
