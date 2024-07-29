@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 func enableCORS(handler http.Handler) http.Handler {
@@ -24,4 +25,9 @@ func enableCORS(handler http.Handler) http.Handler {
 
 func attachMiddleware(router *mux.Router) {
 	router.Use(enableCORS)
+
+	// Handle cancelled requests
+	router.Use(func(next http.Handler) http.Handler {
+		return http.TimeoutHandler(next, 30*time.Second, "Request timed out")
+	})
 }

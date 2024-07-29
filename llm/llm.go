@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkoukk/tiktoken-go"
+	"golang.org/x/net/context"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -12,84 +13,101 @@ import (
 	"path/filepath"
 )
 
-const OpenAIModel = "gpt-4-turbo"
+var OpenAIModel = "gpt-4-turbo"
+
 const TokenLimitExceeded = "the number of tokens exceeds the maximum, please reduce the amount of data you are sending"
 
 var apiKey = os.Getenv("OPENAI_API_KEY")
 
 // TODO: Allow the cancelling of a request
-func AskGPT4Turbo(messages []Message) (string, error) {
+func AskModel(messages []Message, ctx context.Context) (string, error) {
 	if apiKey == "" {
 		return "", fmt.Errorf("OPENAI_API_KEY environment variable not set")
 	}
 
-	url := "https://api.openai.com/v1/chat/completions"
+	for {
+		select {
+		case <-ctx.Done():
+			// The operation was canceled
+			return "", nil
+		default:
+			url := "https://api.openai.com/v1/chat/completions"
 
-	// Calculate the number of tokens to make sure we don't go over the limit
-	numTokens, err := calculateNumTokens(messages)
-	if err != nil {
-		return "", err
-	}
-	if numTokens > 128000 {
-		return "", fmt.Errorf(TokenLimitExceeded)
-	}
+			// Calculate the number of tokens to make sure we don't go over the limit
+			numTokens, err := calculateNumTokens(messages)
+			if err != nil {
+				return "", err
+			}
+			if numTokens > 128000 {
+				return "", fmt.Errorf(TokenLimitExceeded)
+			}
 
-	requestBody := ChatRequest{
-		Model:    OpenAIModel,
-		Messages: messages,
-	}
+			requestBody := ChatRequest{
+				Model:    OpenAIModel,
+				Messages: messages,
+			}
 
-	requestBytes, err := json.Marshal(requestBody)
-	if err != nil {
-		return "", err
-	}
+			requestBytes, err := json.Marshal(requestBody)
+			if err != nil {
+				return "", err
+			}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBytes))
-	if err != nil {
-		return "", err
-	}
+			req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBytes))
+			if err != nil {
+				return "", err
+			}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Println(err)
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				return "", err
+			}
+
+			func() {
+				// This deferred function is wrapped in a closure as it prevents a memory leak due to a defer statement being in a for loop
+				defer func(Body io.ReadCloser) {
+					err := Body.Close()
+					if err != nil {
+						fmt.Println(err)
+					}
+				}(resp.Body)
+			}()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return "", err
+			}
+
+			var response ChatResponse
+			err = json.Unmarshal(body, &response)
+			if err != nil {
+				return "", err
+			}
+
+			if len(response.Choices) > 0 {
+				return response.Choices[0].Message.Content, nil
+			}
+
+			var errorResponse ChatErrorResponse
+			err = json.Unmarshal(body, &errorResponse)
+			if err != nil {
+				return "", err
+			}
+
+			if errorResponse.Error.Message != "" {
+				return "", fmt.Errorf("OpenAI API error: %s", errorResponse.Error.Message)
+			}
+
+			return "", fmt.Errorf("no response from OpenAI API")
 		}
-	}(resp.Body)
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
 	}
+}
 
-	var response ChatResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return "", err
-	}
-
-	if len(response.Choices) > 0 {
-		return response.Choices[0].Message.Content, nil
-	}
-
-	var errorResponse ChatErrorResponse
-	err = json.Unmarshal(body, &errorResponse)
-	if err != nil {
-		return "", err
-	}
-
-	if errorResponse.Error.Message != "" {
-		return "", fmt.Errorf("OpenAI API error: %s", errorResponse.Error.Message)
-	}
-
-	return "", fmt.Errorf("no response from OpenAI API")
+func ChangeModel(model string) {
+	OpenAIModel = model
 }
 
 // UploadFilesToOpenAI uploads multiple files to OpenAI and returns their IDs.

@@ -5,6 +5,7 @@ import (
 	"assistant/api/utils"
 	"assistant/llm"
 	"encoding/json"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -36,27 +37,43 @@ func (ch *ConversationHandler) PromptLLM(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	ch.mu.Lock()
-	ch.conversation = append(ch.conversation, llm.Message{
-		Role:    "user",
-		Content: data.Message,
-	})
-	ch.mu.Unlock()
+	// Get the request context to handle request cancellations
+	ctx := r.Context()
 
-	response, err := llm.AskGPT4Turbo(ch.conversation)
-	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, errorResponse(err.Error()))
+	responseChan := make(chan string)
+	go func() {
+		ch.mu.Lock()
+		ch.conversation = append(ch.conversation, llm.Message{
+			Role:    "user",
+			Content: data.Message,
+		})
+		ch.mu.Unlock()
+
+		response, err := llm.AskModel(ch.conversation, ctx)
+		if err != nil {
+			writeJSONResponse(w, http.StatusInternalServerError, errorResponse(err.Error()))
+			return
+		}
+
+		responseChan <- response
+	}()
+
+	select {
+	case <-ctx.Done():
+		// The client canceled the request
+		log.Println("Client canceled the request")
+		w.WriteHeader(http.StatusRequestTimeout)
 		return
+	case response := <-responseChan:
+		ch.mu.Lock()
+		ch.conversation = append(ch.conversation, llm.Message{
+			Role:    "system",
+			Content: response,
+		})
+		ch.mu.Unlock()
+
+		writeJSONResponse(w, http.StatusOK, map[string]string{"response": response})
 	}
-
-	ch.mu.Lock()
-	ch.conversation = append(ch.conversation, llm.Message{
-		Role:    "system",
-		Content: response,
-	})
-	ch.mu.Unlock()
-
-	writeJSONResponse(w, http.StatusOK, map[string]string{"response": response})
 }
 
 func (ch *ConversationHandler) ResetConversation(w http.ResponseWriter, r *http.Request) {
