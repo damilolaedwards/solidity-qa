@@ -20,6 +20,15 @@ type ProjectConfig struct {
 
 	// Port describes the port that the API will be running on
 	Port int `json:"port"`
+
+	// IncludeInterfaces describes whether interfaces will be included in the slither output
+	IncludeInterfaces bool `json:"includeInterfaces"`
+
+	// IncludeAbstract describes whether abstract contracts will be included in the slither output
+	IncludeAbstract bool `json:"includeAbstract"`
+
+	// IncludeLibraries describes whether libraries will be included in the slither output
+	IncludeLibraries bool `json:"includeLibraries"`
 }
 
 // ReadProjectConfigFromFile reads a JSON-serialized ProjectConfig from a provided file path.

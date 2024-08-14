@@ -1,0 +1,85 @@
+package components
+
+templ PromptBox() {
+  <form class="flex items-center gap-3 group" id="promptForm" hx-post="/prompt" hx-trigger="submit" hx-target="main" hx-swap="outerHTML show:#messageList:bottom" hx-disabled-elt="find input[type='text']">
+    <div class="relative w-full">    
+      <input
+        id="messageBox"
+        name="message"
+        type="text"
+        placeholder="Send message"
+        class="w-full p-4 pr-12 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        class="absolute p-2 right-2 top-1/2 transform -translate-y-1/2 rounded-full text-gray-400"
+      >
+        <svg
+          id="indicator"
+          class="w-4 h-4 htmx-indicator hidden group-[.htmx-request]:inline"
+          onclick="htmx.trigger('#promptForm', 'htmx:abort')"
+          stroke="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 384 512"
+        >
+          // !Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+          <path d="M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z" />
+        </svg>
+
+        <svg
+          class="w-4 h-4 -rotate-90 group-[.htmx-request]:hidden"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M14 5l7 7m0 0l-7 7m7-7H3"
+          />
+        </svg>
+      </button>
+    </div>
+    
+
+    <div class="flex items-center gap-1">
+      <input id="generateImage" name="generateImage" type="checkbox" />
+      <label class="w-max" htmlFor="generateImage">Generate Image?</label>
+    </div>
+  </form>
+
+  <div class="text-sm text-gray-400 mt-2 text-center">
+    <p class="flex justify-center gap-2">
+      <span>Contracts:</span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-pink-400">
+        Interface
+      </span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-blue-300">
+        Abstract
+      </span>
+    </p>
+
+    <p class="flex justify-center gap-2">
+      <span>Functions:</span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-red-500">
+        Private
+      </span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-green-500">
+        Public
+      </span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-orange-500">
+        Internal
+      </span>
+      <span
+        class="before:content-[''] before:h-2 before:w-2 before:rounded-full before:mr-1 before:inline-block before:bg-blue-500">
+        External
+      </span>
+    </p>
+  </div>
+}

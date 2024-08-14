@@ -23,16 +23,16 @@ func ReadDirectoryContents(dirPath string, excludePaths ...string) (string, erro
 			}
 		}
 
-		// If it's a file, read and append its contents
-		if !info.IsDir() {
+		// If it's a solidity file, read and append its contents
+		if !info.IsDir() && strings.HasSuffix(path, ".sol") {
 			content, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
 
-			result.WriteString(fmt.Sprintf("--- Start of file: %s ---\n", path))
+			//result.WriteString(fmt.Sprintf("--- Start of file: %s ---\n", path))
 			result.Write(content)
-			result.WriteString(fmt.Sprintf("\n--- End of file: %s ---\n\n", path))
+			//result.WriteString(fmt.Sprintf("\n--- End of file: %s ---\n\n", path))
 		}
 
 		return nil

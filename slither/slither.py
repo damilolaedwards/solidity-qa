@@ -1,16 +1,34 @@
 import sys
 import json
+from typing import List
 from slither.slither import Slither
+from slither.core.declarations import Contract, Function
+import argparse
 
-if len(sys.argv) != 3:
-    print("Usage: python3 slither.py target output_file")
-    sys.exit(-1)
+parser = argparse.ArgumentParser(
+    description='This program runs slither on a directory and writes the output to a specified file')
 
-target = sys.argv[1]
-output_file = sys.argv[2]
+parser.add_argument('--target', type=str, required=True,
+                    help='The target directory')
+parser.add_argument('--out', type=str, required=True,
+                    help='The file the slither output will be written to')
+parser.add_argument('--include-interfaces', type=bool, required=False, default=False,
+                    help='Whether interfaces should be included in the output')
+parser.add_argument('--include-libraries', type=bool, required=False, default=False,
+                    help='Whether libraries should be included in the output')
+parser.add_argument('--include-abstract', type=bool, required=False, default=False,
+                    help='Whether abstract contracts should be included in the output')
+
+args = parser.parse_args()
+
+target = args.target
+output_file = args.out
+include_interfaces = args.include_interfaces
+include_libraries = args.include_libraries
+include_abstract = args.include_abstract
 
 
-def get_functions_data(functions):
+def get_functions_data(functions: List[Function]):
     functions_data = []
 
     for function in functions:
@@ -35,17 +53,20 @@ def get_functions_data(functions):
     return functions_data
 
 
-def get_inheritance_tree(contract):
+def get_inheritance_tree(contract: Contract):
     inheritance_tree = {
         "id": contract.id,
         "name": contract.name,
         "path": contract.file_scope.filename.relative,
+        "abstract": contract.is_abstract,
+        "interface": contract.is_interface,
         "functions": get_functions_data(contract.functions),
         "inherited_contracts": []
     }
     for inherited_contract in contract.inheritance:
-        inheritance_tree["inherited_contracts"].append(
-            get_inheritance_tree(inherited_contract))
+        if (not inherited_contract.is_interface or include_interfaces) and (not inherited_contract.is_library or include_libraries) and (not inherited_contract.is_abstract or include_abstract):
+            inheritance_tree["inherited_contracts"].append(
+                get_inheritance_tree(inherited_contract))
 
     return inheritance_tree
 
@@ -57,7 +78,8 @@ try:
 
     contracts_data = []
     for contract in slither.contracts:
-        if not contract.is_interface and not contract.is_library:
+        contract.is_abstract
+        if (not contract.is_interface or include_interfaces) and (not contract.is_library or include_libraries) and (not contract.is_abstract or include_abstract):
             contracts_data.append(get_inheritance_tree(contract))
 
     with open(output_file, "w") as file:

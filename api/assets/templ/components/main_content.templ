@@ -1,0 +1,37 @@
+package components
+
+import "assistant/types"
+
+type Suggestion struct {
+  Title string
+  Description string
+}
+
+var suggestions = []Suggestion{
+    {
+        Title: "Explain a function",
+        Description: "Provide a detailed explanation of a specific function in the codebase",
+    },
+    {
+        Title: "Find code smells",
+        Description:
+            "Analyze the codebase for potential code smells or anti-patterns",
+    },
+    {
+        Title: "Suggest refactoring",
+        Description:
+            "Recommend ways to improve the structure or efficiency of the code",
+    },
+    {
+        Title: "Summarize a file",
+        Description:
+            "Give an overview of the purpose and contents of a specific file",
+    },
+}
+
+templ MainContent(contracts []types.Contract, conversation []types.Message, errorMessages []int, isSidebarOpen bool) {
+  <main class="flex flex-grow overflow-hidden">
+    @Sidebar(isSidebarOpen, contracts)
+    @ChatInterface(conversation, suggestions, errorMessages)
+  </main>
+}

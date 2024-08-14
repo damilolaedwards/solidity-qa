@@ -1,273 +1,227 @@
 package llm
 
 import (
-	"bytes"
+	"assistant/api/client"
 	"encoding/json"
 	"fmt"
 	"github.com/pkoukk/tiktoken-go"
 	"golang.org/x/net/context"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
-var OpenAIModel = "gpt-4-turbo"
+type Model struct {
+	Name      string
+	Model     string
+	Generates string
+	url       string
+	headers   map[string]string
+}
+
+const DefaultModel = "gpt-4-turbo"
+
+var models = map[string]Model{
+	"gpt-4-turbo": {
+		Name:      "GPT 4 Turbo",
+		Model:     "gpt-4-turbo",
+		Generates: "text",
+		url:       "https://api.openai.com/v1/chat/completions",
+		headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")),
+		},
+	},
+	"dall-e-3": {
+		Name:      "DALL·E 3",
+		Model:     "dall-e-3",
+		Generates: "image",
+		url:       "https://api.openai.com/v1/images/generations",
+		headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")),
+		},
+	},
+	"claude-3-5-sonnet-20240620": {
+		Name:      "Claude 3.5 Sonnet",
+		Model:     "claude-3-5-sonnet-20240620",
+		Generates: "text",
+		url:       "https://api.anthropic.com/v1/messages",
+		headers: map[string]string{
+			"Content-Type":      "application/json",
+			"x-api-key":         os.Getenv("CLAUDE_API_KEY"),
+			"anthropic-version": "2023-06-01",
+		},
+	},
+}
 
 const TokenLimitExceeded = "the number of tokens exceeds the maximum, please reduce the amount of data you are sending"
 
-var apiKey = os.Getenv("OPENAI_API_KEY")
-
-func AskModel(messages []Message, ctx context.Context) (string, error) {
-	if apiKey == "" {
-		return "", fmt.Errorf("OPENAI_API_KEY environment variable not set")
-	}
-
+func AskModel(messages []ApiMessage, model string, ctx context.Context) (string, error) {
 	for {
 		select {
 		case <-ctx.Done():
-			// The operation was canceled
 			return "", nil
 		default:
-			url := "https://api.openai.com/v1/chat/completions"
-
-			// Calculate the number of tokens to make sure we don't go over the limit
-			numTokens, err := calculateNumTokens(messages)
-			if err != nil {
-				return "", err
-			}
-			if numTokens > 128000 {
-				return "", fmt.Errorf(TokenLimitExceeded)
-			}
-
-			requestBody := ChatRequest{
-				Model:    OpenAIModel,
-				Messages: messages,
-			}
-
-			requestBytes, err := json.Marshal(requestBody)
+			m, err := getModel(model)
 			if err != nil {
 				return "", err
 			}
 
-			req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBytes))
+			// TODO: Come back to this
+			//numTokens, err := calculateNumTokens(messages, m.Model)
+			//if err != nil {
+			//	return "", err
+			//}
+			//if numTokens > 128000 {
+			//	return "", fmt.Errorf(TokenLimitExceeded)
+			//}
+
+			var requestBody any
+
+			if m.Generates == "image" {
+				requestBody = ImageGenerationRequest{
+					Model:  m.Model,
+					Prompt: messages[len(messages)-1].Content,
+					N:      1,
+					Size:   "1024x1024",
+				}
+			} else {
+				requestBody = TextGenerationRequest{
+					Model:     m.Model,
+					Messages:  messages,
+					MaxTokens: 3000,
+				}
+			}
+
+			req, err := client.CreateRequest(m.url, requestBody, "POST", m.headers)
 			if err != nil {
 				return "", err
 			}
 
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+apiKey)
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
+			resp, err := client.DoRequest(req)
 			if err != nil {
 				return "", err
 			}
 
-			func() {
-				// This deferred function is wrapped in a closure as it prevents a memory leak due to a defer statement being in a for loop
-				defer func(Body io.ReadCloser) {
-					err := Body.Close()
-					if err != nil {
-						fmt.Println(err)
-					}
-				}(resp.Body)
-			}()
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return "", err
-			}
-
-			var response ChatResponse
-			err = json.Unmarshal(body, &response)
-			if err != nil {
-				return "", err
-			}
-
-			if len(response.Choices) > 0 {
-				return response.Choices[0].Message.Content, nil
-			}
-
-			var errorResponse ChatErrorResponse
-			err = json.Unmarshal(body, &errorResponse)
-			if err != nil {
-				return "", err
-			}
-
-			if errorResponse.Error.Message != "" {
-				return "", fmt.Errorf("OpenAI API error: %s", errorResponse.Error.Message)
-			}
-
-			return "", fmt.Errorf("no response from OpenAI API")
+			return handleResponse(m, resp)
 		}
 	}
 }
 
-func ChangeModel(model string) {
-	OpenAIModel = model
+func getModel(model string) (Model, error) {
+	if model == "" {
+		model = DefaultModel
+	}
+	m, ok := models[model]
+	if !ok {
+		return Model{}, fmt.Errorf("unknown model: %s", model)
+	}
+	return m, nil
 }
 
-// UploadFilesToOpenAI uploads multiple files to OpenAI and returns their IDs.
-func UploadFilesToOpenAI(filePaths []string) ([]string, error) {
-	// Ensure all provided files exist, are not directories and do not exceed the maximum file size limit
-	var fileSizes int64 = 0
-	for _, filePath := range filePaths {
-		info, err := os.Stat(filePath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				return nil, fmt.Errorf("file %s does not exist", filePath)
-			}
-			return nil, fmt.Errorf("failed to stat file %s: %w", filePath, err)
-		}
-
-		if info.IsDir() {
-			return nil, fmt.Errorf("file %s is a directory", filePath)
-		}
-
-		if info.Size() > 512*1024*1024 {
-			return nil, fmt.Errorf("file %s size exceeds the maximum limit of 512 MB", filePath)
-		}
-
-		fileSizes += info.Size()
-		if fileSizes > 100*1000*1024*1024 {
-			return nil, fmt.Errorf("file size exceeds the maximum limit of 100 GB")
-		}
-	}
-
-	var fileIDs []string
-
-	for _, filePath := range filePaths {
-		fileID, err := UploadFileToOpenAI(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to upload file %s: %w", filePath, err)
-		}
-		fileIDs = append(fileIDs, fileID)
-	}
-
-	return fileIDs, nil
-}
-
-// UploadFileToOpenAI uploads a file at a specified path to OpenAI and returns the file ID.
-func UploadFileToOpenAI(filePath string) (string, error) {
-	info, err := os.Stat(filePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", fmt.Errorf("file %s does not exist", filePath)
-		}
-		return "", fmt.Errorf("failed to stat file %s: %w", filePath, err)
-	}
-
-	if info.IsDir() {
-		return "", fmt.Errorf("file %s is a directory", filePath)
-	}
-
-	if info.Size() > 512*1024*1024 {
-		return "", fmt.Errorf("file %s size exceeds the maximum limit of 512 MB", filePath)
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file: %w", err)
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Println("Error closing file: ", err)
-		}
-	}(file)
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-
-	part, err := writer.CreateFormFile("file", filepath.Base(file.Name()))
-	if err != nil {
-		return "", fmt.Errorf("failed to create form file: %w", err)
-	}
-	_, err = io.Copy(part, file)
-	if err != nil {
-		return "", fmt.Errorf("failed to copy file content: %w", err)
-	}
-
-	// Add file purpose
-	err = writer.WriteField("purpose", "assistants")
-	if err != nil {
-		return "", fmt.Errorf("failed to write field: %w", err)
-	}
-
-	err = writer.Close()
+func handleResponse(m Model, resp *http.Response) (string, error) {
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
-
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/files", body)
-	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
+	if m.Generates == "image" {
+		return handleImageResponse(body)
 	}
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("failed to execute request: %w", err)
+	if m.Model == "claude-3-5-sonnet-20240620" {
+		return handleClaudeTextResponse(body)
+	} else {
+		return handleOpenAITextResponse(body)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Println("Error closing response body: ", err)
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	var result struct {
-		ID string `json:"id"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return result.ID, nil
 }
 
-// DeleteFileFromOpenAI deletes a file from OpenAI using the given file ID.
-func DeleteFileFromOpenAI(fileID string) error {
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("https://api.openai.com/v1/files/%s", fileID), nil)
+func handleImageResponse(body []byte) (string, error) {
+	var response ImageGenerationResponse
+	err := json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return "", err
 	}
-
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	if len(response.Data) > 0 {
+		return response.Data[0].URL, nil
+	}
+	var errorResponse OpenAIErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
 	if err != nil {
-		return fmt.Errorf("failed to execute request: %w", err)
+		return "", err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Println("Error closing response body: ", err)
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	if errorResponse.Error.Message != "" {
+		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
 	}
-
-	return nil
+	return "", fmt.Errorf("no response from model")
 }
 
-func calculateNumTokens(messages []Message) (int, error) {
+func handleOpenAITextResponse(body []byte) (string, error) {
+	var response OpenAITextGenerationResponse
+	err := json.Unmarshal(body, &response)
+	if err != nil {
+		return "", err
+	}
+	if len(response.Choices) > 0 {
+		return response.Choices[0].Message.Content, nil
+	}
+	var errorResponse OpenAIErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+	if err != nil {
+		return "", err
+	}
+	if errorResponse.Error.Message != "" {
+		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
+	}
+	return "", fmt.Errorf("no response from model")
+}
+
+func handleClaudeTextResponse(body []byte) (string, error) {
+	var response ClaudeTextGenerationResponse
+	err := json.Unmarshal(body, &response)
+	if err != nil {
+		return "", err
+	}
+	if len(response.Content) > 0 {
+		return response.Content[0].Text, nil
+	}
+	var errorResponse ClaudeErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+	if err != nil {
+		return "", err
+	}
+	if errorResponse.Error.Message != "" {
+		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
+	}
+	return "", fmt.Errorf("no response from model")
+}
+
+func GetTextGenerationModels() []Model {
+	var textModels []Model
+
+	for _, m := range models {
+		if m.Generates == "text" {
+			textModels = append(textModels, m)
+		}
+	}
+	return textModels
+}
+
+func GetImageGenerationModel() Model {
+	for _, m := range models {
+		if m.Generates == "image" {
+			return m
+		}
+	}
+
+	panic("no image model found")
+}
+
+func calculateNumTokens(messages []ApiMessage, model string) (int, error) {
 	var numTokens = 0
 
-	tkm, err := tiktoken.EncodingForModel(OpenAIModel)
+	tkm, err := tiktoken.EncodingForModel(model)
 	if err != nil {
 		return numTokens, fmt.Errorf("unable to get model encoding: %v", err)
 	}

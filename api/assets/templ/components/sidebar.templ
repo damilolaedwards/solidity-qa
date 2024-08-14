@@ -1,0 +1,89 @@
+package components
+
+import "assistant/types"
+import "strconv"
+import "fmt"
+
+templ renderFunctionButton(color string, functionName string, contractName string) {
+  <button class={"func block p-1 pl-4", color} onclick="askLLMAboutFunction(event)" data-action={fmt.Sprintf("Give me a detailed explanation of function **%s** in contract **%s**", functionName, contractName)}>
+    {functionName}
+  </button>
+}
+
+templ renderFunction(function types.Function, contractName string) {
+  switch function.Visibility {
+    case "private":
+      @renderFunctionButton("text-red-500", function.Name, contractName)
+    case "public":
+      @renderFunctionButton("text-green-500", function.Name, contractName)
+    case "internal":
+      @renderFunctionButton("text-orange-500", function.Name, contractName)
+    case "external":
+      @renderFunctionButton("text-blue-500", function.Name, contractName)
+    default:
+      @renderFunctionButton("text-gray-500", function.Name, contractName)
+  }
+}
+
+templ renderContract(index int, contract types.Contract, inherited bool) {
+  <details class="p-2 [&_svg]:open:-rotate-180">
+    if !inherited {
+      <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
+        <div class={templ.KV("text-pink-400", contract.Interface), templ.KV("text-blue-300", contract.Abstract)}>{fmt.Sprintf("%d. %s", index + 1, contract.Name)}</div>
+
+        <div>
+          <svg class="rotate-0 transform text-white transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </summary>
+    } else {
+      <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
+        <div class={templ.KV("text-pink-400", contract.Interface), templ.KV("text-blue-300", contract.Abstract)}>{fmt.Sprintf("%s", contract.Name)}</div>
+
+        <div>
+          <svg class="rotate-0 transform text-white transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </summary>
+    }
+
+    for _, function := range contract.Functions {
+      @renderFunction(function, contract.Name)
+    }
+
+    for index, contract := range contract.InheritedContracts {
+      @renderContract(index, contract, true)
+    }
+  </details>
+}
+
+templ Sidebar(isOpen bool, contracts []types.Contract) {
+  <aside
+    class={"fixed overflow-scroll z-50 inset-y-0 left-0 w-fit bg-gray-800 transform transition-all duration-300 ease-in-out md:relative", templ.KV("max-md:translate-x-0 md:w-fit", isOpen), templ.KV("max-md:-translate-x-full md:w-0", !isOpen)}
+    id="sidebar"
+    aria-label="Sidebar"
+    aria-hidden={strconv.FormatBool(!isOpen)}
+  >
+    <div class={"max-md:pt-[60px] px-4", templ.KV("md:hidden", !isOpen)}>
+      if len(contracts) > 0 {
+        for index, contract := range contracts {
+          @renderContract(index, contract, false)
+        }
+      } else {
+        <p class="text-lg font-semibold p-2">No contracts found</p>
+      }
+    </div>
+  </aside>
+
+  <script>
+    function askLLMAboutFunction(e) {
+      const messageBox = document.getElementById("messageBox")
+      if (!messageBox) return;
+
+      messageBox.value = e.currentTarget.getAttribute("data-action")
+      messageBox.nextElementSibling.click();
+    }
+  </script>
+}

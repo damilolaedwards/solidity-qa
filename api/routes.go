@@ -2,13 +2,18 @@ package api
 
 import (
 	"assistant/api/handlers"
+	"assistant/types"
+	"fmt"
 	"github.com/gorilla/mux"
 )
 
-func attachConversationRoutes(router *mux.Router, targetContracts string) {
-	ch := handlers.NewConversationHandler(targetContracts)
-	conversationRoute := "/conversation"
-	router.HandleFunc(conversationRoute, ch.GetConversation).Methods("GET")
-	router.HandleFunc(conversationRoute, ch.PromptLLM).Methods("POST")
-	router.HandleFunc(conversationRoute, ch.ResetConversation).Methods("DELETE")
+func attachFrontendRoutes(router *mux.Router, contracts []types.Contract, targetContracts string) {
+	ch := handlers.NewFrontendHandler(targetContracts, contracts)
+	frontendRoute := "/"
+
+	router.HandleFunc(frontendRoute, ch.Get).Methods("GET")
+	router.HandleFunc(fmt.Sprintf("%stoggle-sidebar", frontendRoute), ch.ToggleSidebar).Methods("POST")
+	router.HandleFunc(fmt.Sprintf("%schange-model", frontendRoute), ch.ChangeModel).Methods("POST")
+	router.HandleFunc(fmt.Sprintf("%sreset", frontendRoute), ch.ResetConversation).Methods("POST")
+	router.HandleFunc(fmt.Sprintf("%sprompt", frontendRoute), ch.PromptLLM).Methods("POST")
 }

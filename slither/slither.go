@@ -1,6 +1,7 @@
 package slither
 
 import (
+	"assistant/config"
 	"assistant/types"
 	_ "embed"
 	"encoding/json"
@@ -14,7 +15,7 @@ import (
 //go:embed slither.py
 var pythonScript string
 
-func RunSlitherOnTarget(target string, outputFile *os.File) error {
+func RunSlitherOnTarget(target string, outputFile *os.File, includeInterfaces bool, includeLibraries bool, includeAbstract bool) error {
 	// Run the command
 	// Create a temporary file to hold the Python script
 	tmpfile, err := os.CreateTemp("", "script-*.py")
@@ -39,8 +40,17 @@ func RunSlitherOnTarget(target string, outputFile *os.File) error {
 		return nil
 	}
 
-	// Arguments to pass to the Python script
-	args := []string{target, outputFile.Name()}
+	args := []string{"--target", target, "--out", outputFile.Name()}
+
+	if includeInterfaces {
+		args = append(args, "--include-interfaces", "true")
+	}
+	if includeLibraries {
+		args = append(args, "--include-libraries", "true")
+	}
+	if includeAbstract {
+		args = append(args, "--include-abstract", "true")
+	}
 
 	// Prepare the command
 	cmd := exec.Command("python3", append([]string{tmpfile.Name()}, args...)...)
@@ -58,7 +68,7 @@ func RunSlitherOnTarget(target string, outputFile *os.File) error {
 	return nil
 }
 
-func RunSlitherOnDir(dirPath string, excludePaths ...string) (*types.SlitherOutput, error) {
+func RunSlitherOnProject(projectConfig *config.ProjectConfig) (*types.SlitherOutput, error) {
 	var contracts []types.Contract
 
 	// Create a temporary file to hold the slither output
@@ -74,13 +84,13 @@ func RunSlitherOnDir(dirPath string, excludePaths ...string) (*types.SlitherOutp
 	}(tmpfile.Name()) // Clean up
 
 	// Check if provided directory is a directory
-	info, err := os.Stat(dirPath)
+	info, err := os.Stat(projectConfig.TargetContracts.Dir)
 	if err != nil || !info.IsDir() {
 		return nil, fmt.Errorf("unable to read directory")
 	}
 
 	// Run slither on project
-	err = RunSlitherOnTarget(".", tmpfile)
+	err = RunSlitherOnTarget(".", tmpfile, projectConfig.IncludeInterfaces, projectConfig.IncludeLibraries, projectConfig.IncludeAbstract)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +108,7 @@ func RunSlitherOnDir(dirPath string, excludePaths ...string) (*types.SlitherOutp
 	}
 
 	// Filter slither output
-	contracts = filterSlitherOutput(contracts, dirPath, excludePaths)
+	contracts = filterSlitherOutput(contracts, projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths)
 
 	return &types.SlitherOutput{
 		Contracts: contracts,
