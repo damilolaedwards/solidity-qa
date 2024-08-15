@@ -113,12 +113,19 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 
 	// Run slither
 	cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, "\n")
-	slitherOutput, err := slither.RunSlitherOnProject(projectConfig)
+	slitherOutput, err := slither.GetContractsData(projectConfig)
 	if err != nil {
 		cmdLogger.Error("Failed to run the generate command", err)
 		return err
 	}
 	cmdLogger.Info("Successfully ran Slither on the target contracts directory")
+
+	// Obtain target contracts data
+	//targetContracts, err := slither.GetTargetContracts(projectConfig)
+	//if err != nil {
+	//	cmdLogger.Error("Failed to run the generate command", err)
+	//	return err
+	//}
 
 	targetContracts, err := utils.ReadDirectoryContents(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths...)
 	if err != nil {

@@ -58,8 +58,9 @@ def get_inheritance_tree(contract: Contract):
         "id": contract.id,
         "name": contract.name,
         "path": contract.file_scope.filename.relative,
-        "abstract": contract.is_abstract,
-        "interface": contract.is_interface,
+        "is_abstract": contract.is_abstract,
+        "is_interface": contract.is_interface,
+        "is_library": contract.is_library,
         "functions": get_functions_data(contract.functions),
         "inherited_contracts": []
     }

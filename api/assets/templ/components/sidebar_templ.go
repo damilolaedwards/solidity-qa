@@ -158,7 +158,7 @@ func renderContract(index int, contract types.Contract, inherited bool) templ.Co
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var8 = []any{templ.KV("text-pink-400", contract.Interface), templ.KV("text-blue-300", contract.Abstract)}
+			var templ_7745c5c3_Var8 = []any{templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var8...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -183,7 +183,7 @@ func renderContract(index int, contract types.Contract, inherited bool) templ.Co
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d. %s", index+1, contract.Name))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `api/assets/templ/components/sidebar.templ`, Line: 32, Col: 161}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `api/assets/templ/components/sidebar.templ`, Line: 32, Col: 213}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -198,7 +198,7 @@ func renderContract(index int, contract types.Contract, inherited bool) templ.Co
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var11 = []any{templ.KV("text-pink-400", contract.Interface), templ.KV("text-blue-300", contract.Abstract)}
+			var templ_7745c5c3_Var11 = []any{templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var11...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -223,7 +223,7 @@ func renderContract(index int, contract types.Contract, inherited bool) templ.Co
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s", contract.Name))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `api/assets/templ/components/sidebar.templ`, Line: 42, Col: 146}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `api/assets/templ/components/sidebar.templ`, Line: 42, Col: 198}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

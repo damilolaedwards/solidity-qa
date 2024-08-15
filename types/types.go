@@ -24,8 +24,9 @@ type Contract struct {
 	Name               string     `json:"name"`
 	Functions          []Function `json:"functions"`
 	InheritedContracts []Contract `json:"inherited_contracts"`
-	Abstract           bool       `json:"abstract"`
-	Interface          bool       `json:"interface"`
+	IsAbstract         bool       `json:"is_abstract"`
+	IsInterface        bool       `json:"in_interface"`
+	IsLibrary          bool       `json:"is_library"`
 }
 
 type SlitherOutput struct {

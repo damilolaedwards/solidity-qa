@@ -12,10 +12,13 @@ import (
 	"strings"
 )
 
-//go:embed slither.py
-var pythonScript string
+//go:embed get_contracts_data.py
+var getContractsDataScript string
 
-func RunSlitherOnTarget(target string, outputFile *os.File, includeInterfaces bool, includeLibraries bool, includeAbstract bool) error {
+//go:embed get_target_contracts.py
+var getTargetContractsScript string
+
+func GetContractsDataUsingSlither(target string, outputFile *os.File, includeInterfaces bool, includeLibraries bool, includeAbstract bool) error {
 	// Run the command
 	// Create a temporary file to hold the Python script
 	tmpfile, err := os.CreateTemp("", "script-*.py")
@@ -31,7 +34,7 @@ func RunSlitherOnTarget(target string, outputFile *os.File, includeInterfaces bo
 	}(tmpfile.Name()) // Clean up
 
 	// Write the Python script to the temporary file
-	if _, err := tmpfile.Write([]byte(pythonScript)); err != nil {
+	if _, err := tmpfile.Write([]byte(getContractsDataScript)); err != nil {
 		fmt.Println("Error writing to temporary file:", err)
 		return nil
 	}
@@ -68,7 +71,7 @@ func RunSlitherOnTarget(target string, outputFile *os.File, includeInterfaces bo
 	return nil
 }
 
-func RunSlitherOnProject(projectConfig *config.ProjectConfig) (*types.SlitherOutput, error) {
+func GetContractsData(projectConfig *config.ProjectConfig) (*types.SlitherOutput, error) {
 	var contracts []types.Contract
 
 	// Create a temporary file to hold the slither output
@@ -90,7 +93,7 @@ func RunSlitherOnProject(projectConfig *config.ProjectConfig) (*types.SlitherOut
 	}
 
 	// Run slither on project
-	err = RunSlitherOnTarget(".", tmpfile, projectConfig.IncludeInterfaces, projectConfig.IncludeLibraries, projectConfig.IncludeAbstract)
+	err = GetContractsDataUsingSlither(".", tmpfile, projectConfig.IncludeInterfaces, projectConfig.IncludeLibraries, projectConfig.IncludeAbstract)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +116,45 @@ func RunSlitherOnProject(projectConfig *config.ProjectConfig) (*types.SlitherOut
 	return &types.SlitherOutput{
 		Contracts: contracts,
 	}, nil
+}
+
+func GetTargetContracts(projectConfig *config.ProjectConfig) (string, error) {
+	// Create a temporary file to hold the Python script
+	tmpfile, err := os.CreateTemp("", "script-*.py")
+	if err != nil {
+		fmt.Println("Error creating temporary file:", err)
+		return "", nil
+	}
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			fmt.Println("Error removing temporary file:", err)
+		}
+	}(tmpfile.Name()) // Clean up
+
+	// Write the Python script to the temporary file
+	if _, err := tmpfile.Write([]byte(getTargetContractsScript)); err != nil {
+		fmt.Println("Error writing to temporary file:", err)
+		return "", nil
+	}
+	if err := tmpfile.Close(); err != nil {
+		fmt.Println("Error closing temporary file:", err)
+		return "", nil
+	}
+
+	args := []string{"--target", projectConfig.TargetContracts.Dir}
+
+	// Prepare the command
+	cmd := exec.Command("python3", append([]string{tmpfile.Name()}, args...)...)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("error running slither: %v\n", err)
+		fmt.Printf("stderr: %s\n", output)
+		return "", err
+	}
+
+	return string(output), nil
 }
 
 func filterSlitherOutput(contracts []types.Contract, targetDir string, excludePaths []string) []types.Contract {
