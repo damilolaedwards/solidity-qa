@@ -26,7 +26,7 @@ templ renderFunction(function types.Function, contractName string) {
 }
 
 templ renderContract(index int, contract types.Contract, inherited bool) {
-  <details class="p-2 [&_svg]:open:-rotate-180">
+  <details class="p-2">
     if !inherited {
       <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
         <div class={templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}>{fmt.Sprintf("%d. %s", index + 1, contract.Name)}</div>

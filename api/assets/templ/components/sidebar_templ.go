@@ -149,7 +149,7 @@ func renderContract(index int, contract types.Contract, inherited bool) templ.Co
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<details class=\"p-2 [&amp;_svg]:open:-rotate-180\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<details class=\"p-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

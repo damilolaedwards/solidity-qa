@@ -18,53 +18,50 @@
   border-radius: 0.5rem;
 }
 
-.unreset {
-  a {
-    @apply text-blue-100 underline bg-[hsl(232,60%,26%)];
-  }
-  p {
-    @apply block my-4;
-  }
+details[open] > summary > div > svg {
+  rotate: 180deg;
+}
 
-  blockquote,
-  figure {
-    @apply my-4 mx-10;
-  }
+@layer utilities {
+  .unreset {
+    a {
+      @apply text-blue-100 underline bg-[hsl(232,60%,26%)];
+    }
+    p {
+      @apply block my-4;
+    }
 
-  hr {
-    @apply border;
-  }
+    blockquote,
+    figure {
+      @apply my-4 mx-10;
+    }
 
-  h1 {
-    @apply text-4xl font-bold my-2;
-  }
+    hr {
+      @apply border;
+    }
 
-  h2 {
-    @apply text-2xl font-bold my-3;
-  }
-
-  h3 {
-    @apply text-lg font-bold my-4;
-  }
-
-  h4 {
-    @apply text-base font-bold my-5;
-  }
-
-  h5 {
-    @apply text-sm font-bold my-6;
-  }
-
-  h6 {
-    @apply text-xs font-bold my-10;
-  }
-
-  article,
-  aside,
-  nav,
-  section {
     h1 {
+      @apply text-4xl font-bold my-2;
+    }
+
+    h2 {
       @apply text-2xl font-bold my-3;
+    }
+
+    h3 {
+      @apply text-lg font-bold my-4;
+    }
+
+    h4 {
+      @apply text-base font-bold my-5;
+    }
+
+    h5 {
+      @apply text-sm font-bold my-6;
+    }
+
+    h6 {
+      @apply text-xs font-bold my-10;
     }
 
     article,
@@ -72,7 +69,7 @@
     nav,
     section {
       h1 {
-        @apply text-lg font-bold my-4;
+        @apply text-2xl font-bold my-3;
       }
 
       article,
@@ -80,7 +77,7 @@
       nav,
       section {
         h1 {
-          @apply text-base font-bold my-5;
+          @apply text-lg font-bold my-4;
         }
 
         article,
@@ -88,7 +85,7 @@
         nav,
         section {
           h1 {
-            @apply text-sm font-bold my-6;
+            @apply text-base font-bold my-5;
           }
 
           article,
@@ -96,79 +93,88 @@
           nav,
           section {
             h1 {
-              @apply text-xs font-bold my-10;
+              @apply text-sm font-bold my-6;
+            }
+
+            article,
+            aside,
+            nav,
+            section {
+              h1 {
+                @apply text-xs font-bold my-10;
+              }
             }
           }
         }
       }
     }
-  }
 
-  ul,
-  menu {
-    @apply list-disc my-4 pl-10;
-  }
+    ul,
+    menu {
+      @apply list-disc my-4 pl-10;
+    }
 
-  li > p {
-    @apply my-0;
-  }
+    li > p {
+      @apply my-0;
+    }
 
-  ol {
-    @apply list-decimal my-4 pl-10;
-  }
-
-  ul,
-  ol {
-    ul {
-      list-style-type: circle;
+    ol {
+      @apply list-decimal my-4 pl-10;
     }
 
     ul,
     ol {
       ul {
-        list-style-type: square;
+        list-style-type: circle;
+      }
+
+      ul,
+      ol {
+        ul {
+          list-style-type: square;
+        }
       }
     }
-  }
 
-  dd {
-    @apply pl-10;
-  }
+    dd {
+      @apply pl-10;
+    }
 
-  dl {
-    @apply my-4;
-  }
+    dl {
+      @apply my-4;
+    }
 
-  ul,
-  ol,
-  menu,
-  dl {
     ul,
     ol,
     menu,
     dl {
-      margin: 0;
+      ul,
+      ol,
+      menu,
+      dl {
+        margin: 0;
+      }
     }
-  }
 
-  legend {
-    @apply py-0 px-1;
-  }
+    legend {
+      @apply py-0 px-1;
+    }
 
-  fieldset {
-    @apply my-0 mx-1 pt-0 px-1 pb-2;
-  }
+    fieldset {
+      @apply my-0 mx-1 pt-0 px-1 pb-2;
+    }
 
-  b,
-  strong {
-    font-weight: bold;
-  }
+    b,
+    strong {
+      font-weight: bold;
+    }
 
-  pre {
-    @apply my-4;
-  }
+    pre {
+      @apply my-4;
+    }
 
-  code {
-    font-size: x-small;
+    code {
+      font-size: x-small;
+    }
   }
 }
