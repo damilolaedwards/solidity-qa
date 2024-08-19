@@ -252,7 +252,7 @@ func ChatInterface(conversation []types.Message, suggestions []Suggestion, error
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><script type=\"module\">\n        import { marked } from \"https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js\";\n\n        marked.use({\n          pedantic: false,\n          breaks: false,\n          gfm: false,\n        });\n        document.querySelectorAll('.markdownContent').forEach((md) => {\n          md.innerHTML = marked.parse(md.innerText);\n        });\n      </script>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><script type=\"module\">\n        // import { marked } from \"https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js\";\n\n        // marked.use({\n        //   pedantic: false,\n        //   breaks: false,\n        //   gfm: false,\n        // });\n\n        let converter = new showdown.Converter({\n          tables: true,\n          tasklists: true,\n          smartIndentationFix: true,\n          simpleLineBreaks: true,\n          openLinksInNewWindow: true,\n          moreStyling: true,\n        });\n\n        document.querySelectorAll('.markdownContent').forEach((md) => {\n          const markdownContent = md.innerText;\n          console.log(markdownContent)\n          const htmlContent = converter.makeHtml(markdownContent);\n          console.log(htmlContent)\n          md.innerHTML = htmlContent;\n        });\n      </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

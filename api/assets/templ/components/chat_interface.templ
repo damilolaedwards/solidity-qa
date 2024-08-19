@@ -47,15 +47,19 @@ templ ChatInterface(conversation []types.Message, suggestions []Suggestion, erro
         }
       </div>
       <script type="module">
-        import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
-
-        marked.use({
-          pedantic: false,
-          breaks: false,
-          gfm: false,
+        let converter = new showdown.Converter({
+          tables: true,
+          tasklists: true,
+          smartIndentationFix: true,
+          simpleLineBreaks: true,
+          openLinksInNewWindow: true,
+          moreStyling: true,
         });
+
         document.querySelectorAll('.markdownContent').forEach((md) => {
-          md.innerHTML = marked.parse(md.innerText);
+          const markdownContent = md.innerText;
+          const htmlContent = converter.makeHtml(markdownContent);
+          md.innerHTML = htmlContent;
         });
       </script>
     }

@@ -25,36 +25,24 @@ templ renderFunction(function types.Function, contractName string) {
   }
 }
 
-templ renderContract(index int, contract types.Contract, inherited bool) {
+templ renderContract(contract types.Contract) {
   <details class="p-2">
-    if !inherited {
-      <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
-        <div class={templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}>{fmt.Sprintf("%d. %s", index + 1, contract.Name)}</div>
+    <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
+      <div class={templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}>{fmt.Sprintf("%s", contract.Name)}</div>
 
-        <div>
-          <svg class="rotate-0 transform text-white transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      </summary>
-    } else {
-      <summary class="flex justify-between cursor-pointer list-none items-center gap-4">
-        <div class={templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}>{fmt.Sprintf("%s", contract.Name)}</div>
-
-        <div>
-          <svg class="rotate-0 transform text-white transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      </summary>
-    }
+      <div>
+        <svg class="rotate-0 transform text-white transition-all duration-300" fill="none" height="20" width="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+    </summary>
 
     for _, function := range contract.Functions {
       @renderFunction(function, contract.Name)
     }
 
-    for index, contract := range contract.InheritedContracts {
-      @renderContract(index, contract, true)
+    for _, contract := range contract.InheritedContracts {
+      @renderContract(contract)
     }
   </details>
 }
@@ -70,8 +58,8 @@ templ Sidebar(isOpen bool, contracts []types.Contract) {
   >
     <div class={"max-md:pt-[60px] px-4", templ.KV("md:hidden", !isOpen)}>
       if len(contracts) > 0 {
-        for index, contract := range contracts {
-          @renderContract(index, contract, false)
+        for _, contract := range contracts {
+          @renderContract(contract)
         }
       } else {
         <p class="text-lg font-semibold p-2">No contracts found</p>
