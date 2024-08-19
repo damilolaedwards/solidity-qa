@@ -12,11 +12,12 @@ import (
 )
 
 type Model struct {
-	Name      string
-	Model     string
-	Generates string
-	url       string
-	headers   map[string]string
+	Name        string
+	Model       string
+	Generates   string
+	url         string
+	headers     map[string]string
+	maxTokenLen int
 }
 
 const DefaultModel = "gpt-4-turbo"
@@ -31,6 +32,7 @@ var models = map[string]Model{
 			"Content-Type":  "application/json",
 			"Authorization": fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")),
 		},
+		maxTokenLen: 128000,
 	},
 	"dall-e-3": {
 		Name:      "DALL·E 3",
@@ -41,6 +43,7 @@ var models = map[string]Model{
 			"Content-Type":  "application/json",
 			"Authorization": fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")),
 		},
+		maxTokenLen: 76800,
 	},
 	"claude-3-5-sonnet-20240620": {
 		Name:      "Claude 3.5 Sonnet",
@@ -52,6 +55,7 @@ var models = map[string]Model{
 			"x-api-key":         os.Getenv("CLAUDE_API_KEY"),
 			"anthropic-version": "2023-06-01",
 		},
+		maxTokenLen: 1048576,
 	},
 }
 
@@ -68,14 +72,13 @@ func AskModel(messages []ApiMessage, model string, ctx context.Context) (string,
 				return "", err
 			}
 
-			// TODO: Come back to this
-			//numTokens, err := calculateNumTokens(messages, m.Model)
-			//if err != nil {
-			//	return "", err
-			//}
-			//if numTokens > 128000 {
-			//	return "", fmt.Errorf(TokenLimitExceeded)
-			//}
+			numTokens, err := calculateNumTokens(messages)
+			if err != nil {
+				return "", err
+			}
+			if numTokens > m.maxTokenLen {
+				return "", fmt.Errorf(TokenLimitExceeded)
+			}
 
 			var requestBody any
 
@@ -218,10 +221,10 @@ func GetImageGenerationModel() Model {
 	panic("no image model found")
 }
 
-func calculateNumTokens(messages []ApiMessage, model string) (int, error) {
+func calculateNumTokens(messages []ApiMessage) (int, error) {
 	var numTokens = 0
 
-	tkm, err := tiktoken.EncodingForModel(model)
+	tkm, err := tiktoken.EncodingForModel(DefaultModel)
 	if err != nil {
 		return numTokens, fmt.Errorf("unable to get model encoding: %v", err)
 	}

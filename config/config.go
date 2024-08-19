@@ -18,6 +18,9 @@ type ProjectConfig struct {
 	// TargetContracts describes the directory that holds the contracts to be fuzzed.
 	TargetContracts DirectoryConfig `json:"targetContracts"`
 
+	// TestContracts describes the directory that holds the test contracts
+	TestContracts DirectoryConfig `json:"testContracts"`
+
 	// Port describes the port that the API will be running on
 	Port int `json:"port"`
 

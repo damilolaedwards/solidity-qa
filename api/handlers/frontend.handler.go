@@ -90,6 +90,7 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 
 	if err := utils.ValidateData(&data); err != nil {
 		log.Println("Validation error:", err)
+		w.WriteHeader(http.StatusBadRequest)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
 	}
@@ -120,13 +121,14 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 	select {
 	case err := <-errorChan:
 		log.Println("Error:", err)
-		//w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		h.errorMessages = append(h.errorMessages, len(conversationService.GetConversation())-1)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 
 	case <-ctx.Done():
 		// The client canceled the request
 		log.Println("Client canceled the request")
+		w.WriteHeader(http.StatusRequestTimeout)
 		h.errorMessages = append(h.errorMessages, len(conversationService.GetConversation())-1)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return

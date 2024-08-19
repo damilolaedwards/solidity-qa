@@ -18,19 +18,29 @@ type Function struct {
 	Parameters []Parameter `json:"parameters"`
 }
 
-type Contract struct {
-	ID                 int        `json:"id"`
-	Path               string     `json:"path"`
-	Name               string     `json:"name"`
-	Functions          []Function `json:"functions"`
-	InheritedContracts []Contract `json:"inherited_contracts"`
-	IsAbstract         bool       `json:"is_abstract"`
-	IsInterface        bool       `json:"in_interface"`
-	IsLibrary          bool       `json:"is_library"`
+type SlitherContract struct {
+	ID                 int               `json:"id"`
+	Name               string            `json:"name"`
+	Code               string            `json:"code"`
+	IsAbstract         bool              `json:"is_abstract"`
+	IsInterface        bool              `json:"in_interface"`
+	IsLibrary          bool              `json:"is_library"`
+	Functions          []Function        `json:"functions"`
+	InheritedContracts []SlitherContract `json:"inherited_contracts"`
 }
 
 type SlitherOutput struct {
-	Contracts []Contract `json:"contracts"`
+	Contracts []SlitherContract `json:"contracts"`
+}
+
+type Contract struct {
+	ID                 int        `json:"id"`
+	Name               string     `json:"name"`
+	IsAbstract         bool       `json:"is_abstract"`
+	IsInterface        bool       `json:"in_interface"`
+	IsLibrary          bool       `json:"is_library"`
+	Functions          []Function `json:"functions"`
+	InheritedContracts []Contract `json:"inherited_contracts"`
 }
 
 type Message struct {

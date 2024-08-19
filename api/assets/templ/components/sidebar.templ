@@ -59,6 +59,8 @@ templ renderContract(index int, contract types.Contract, inherited bool) {
   </details>
 }
 
+var askLLMAboutFunctionHandle = templ.NewOnceHandle()
+
 templ Sidebar(isOpen bool, contracts []types.Contract) {
   <aside
     class={"fixed overflow-scroll z-50 inset-y-0 left-0 w-fit bg-gray-800 transform transition-all duration-300 ease-in-out md:relative", templ.KV("max-md:translate-x-0 md:w-fit", isOpen), templ.KV("max-md:-translate-x-full md:w-0", !isOpen)}
@@ -76,14 +78,4 @@ templ Sidebar(isOpen bool, contracts []types.Contract) {
       }
     </div>
   </aside>
-
-  <script>
-    function askLLMAboutFunction(e) {
-      const messageBox = document.getElementById("messageBox")
-      if (!messageBox) return;
-
-      messageBox.value = e.currentTarget.getAttribute("data-action")
-      messageBox.nextElementSibling.click();
-    }
-  </script>
 }

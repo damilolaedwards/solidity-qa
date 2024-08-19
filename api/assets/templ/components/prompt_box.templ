@@ -1,7 +1,7 @@
 package components
 
 templ PromptBox() {
-  <form class="flex items-center gap-3 group" id="promptForm" hx-post="/prompt" hx-trigger="submit" hx-target="main" hx-swap="outerHTML show:#messageList:bottom" hx-disabled-elt="find input[type='text']">
+  <form id="promptForm" class="flex items-center gap-3 group" id="promptForm" hx-post="/prompt" hx-trigger="submit" hx-target="main" hx-swap="outerHTML show:#messageList:bottom" hx-disabled-elt="find input[type='text']">
     <div class="relative w-full">    
       <input
         id="messageBox"
@@ -11,22 +11,12 @@ templ PromptBox() {
         class="w-full p-4 pr-12 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
+        type="button"
         class="absolute p-2 right-2 top-1/2 transform -translate-y-1/2 rounded-full text-gray-400"
       >
         <svg
-          id="indicator"
-          class="w-4 h-4 htmx-indicator hidden group-[.htmx-request]:inline"
-          onclick="htmx.trigger('#promptForm', 'htmx:abort')"
-          stroke="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 384 512"
-        >
-          // !Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
-          <path d="M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z" />
-        </svg>
-
-        <svg
           class="w-4 h-4 -rotate-90 group-[.htmx-request]:hidden"
+          onclick="triggerFormSubmit()"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -39,15 +29,23 @@ templ PromptBox() {
             d="M14 5l7 7m0 0l-7 7m7-7H3"
           />
         </svg>
+
+        <svg
+          id="indicator"
+          onclick="cancelFormRequest()"
+          class="w-4 h-4 htmx-indicator hidden group-[.htmx-request]:inline"
+          stroke="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 384 512"
+        >
+          // !Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+          <path d="M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z" />
+        </svg>
       </button>
     </div>
-    
-
-    <div class="flex items-center gap-1">
-      <input id="generateImage" name="generateImage" type="checkbox" />
-      <label class="w-max" htmlFor="generateImage">Generate Image?</label>
-    </div>
   </form>
+
+  <button id="cancelBtn" onclick="htmx.trigger('#promptForm', 'htmx:abort')" class="hidden" />
 
   <div class="text-sm text-gray-400 mt-2 text-center">
     <p class="flex justify-center gap-2">

@@ -15,7 +15,27 @@ templ Home(contracts []types.Contract, conversation []types.Message, errorMessag
         <link rel="stylesheet" href="/static/css/vendor/notiflix.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/dark.css" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="htmx-config" content='{"timeout":1000000000}'>
+        <!--
+        * 204 No Content by default does nothing, but is not an error
+        * 2xx, 3xx and 422 responses are non-errors and are swapped
+        * 4xx & 5xx responses are swapped but are errors
+        * 503 responses are not swapped and is an error
+        * all other responses are swapped using "..." as a catch-all
+        -->
+        <meta
+            name="htmx-config"
+            content='{
+                "timeout":300000,
+                "responseHandling":[
+                    {"code":"204", "swap": false},
+                    {"code":"[23]..", "swap": true},
+                    {"code":"422", "swap": true},
+                    {"code":"503", "swap": false, "error":true},
+                    {"code":"[45]..", "swap": true, "error":true},
+                    {"code":"...", "swap": true}
+                ]
+            }'
+        />
         <script src="https://cdn.tailwindcss.com"></script>
         <title>Assistant</title>
     </head>
@@ -29,7 +49,9 @@ templ Home(contracts []types.Contract, conversation []types.Message, errorMessag
         <script type="module"
             src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
         <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+        // <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script src="/static/js/vendor/notiflix.js"></script>
+        <script src="/static/js/script.js"></script>
     </body>
 
     </html>

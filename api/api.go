@@ -5,7 +5,6 @@ import (
 	"assistant/logging"
 	"assistant/types"
 	"embed"
-	"encoding/json"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
@@ -16,7 +15,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -27,18 +25,18 @@ var staticAssets embed.FS
 
 type API struct {
 	targetContracts string
-	slitherOutput   *types.SlitherOutput
+	contracts       []types.Contract
 	logger          *logging.Logger
 }
 
-func InitializeAPI(targetContracts string, slitherOutput *types.SlitherOutput) *API {
+func InitializeAPI(contractCodes string, contracts []types.Contract) *API {
 	// Create sub-logger for api module
 	logger := logging.NewLogger(zerolog.InfoLevel)
 	logger.AddWriter(os.Stdout, logging.UNSTRUCTURED, true)
 
 	return &API{
-		targetContracts: targetContracts,
-		slitherOutput:   slitherOutput,
+		targetContracts: contractCodes,
+		contracts:       contracts,
 		logger:          logger,
 	}
 }
@@ -106,39 +104,12 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	}
 	defer watcher.Close()
 
-	err = watcher.Add("assistant.json")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err = watcher.Add("assistant.json")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	select {
-	// Restart server if config file is modified
-	case event, ok := <-watcher.Events:
-		if !ok {
-			return
-		}
-		if event.Op&fsnotify.Write == fsnotify.Write {
-			fmt.Println(fmt.Sprintf("%s modifed. Restarting server...", event.Name))
-			err := listener.Close()
-			if err != nil {
-				logger.Error("Failed to shut down server: ", err)
-				return
-			}
-
-			workingDirectory, err := os.Getwd()
-			if err != nil {
-				logger.Error("Failed to obtain working directory", err)
-				return
-			}
-
-			configPath := filepath.Join(workingDirectory, "assistant.json")
-			projectConfig, err = config.ReadProjectConfigFromFile(configPath)
-			if err != nil {
-				logger.Error("Failed to read project config: ", err)
-				return
-			}
-			api.Start(projectConfig)
-		}
 	// Shutdown the server upon keyboard interrupt
 	case <-sigChan:
 		logger.Info("Shutting down server...")
@@ -150,20 +121,38 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	// Gracefully shutdown the server if a server error is encountered
 	case err := <-serverErrorChan:
 		logger.Error("Server error: ", err)
+		// Restart server if config file is modified
+		//case event, ok := <-watcher.Events:
+		//	if !ok {
+		//		return
+		//	}
+		//	if event.Op&fsnotify.Write == fsnotify.Write {
+		//		fmt.Println(fmt.Sprintf("%s modifed. Restarting server...", event.Name))
+		//		err := listener.Close()
+		//		if err != nil {
+		//			logger.Error("Failed to shut down server: ", err)
+		//			return
+		//		}
+		//
+		//		workingDirectory, err := os.Getwd()
+		//		if err != nil {
+		//			logger.Error("Failed to obtain working directory", err)
+		//			return
+		//		}
+		//
+		//		configPath := filepath.Join(workingDirectory, "assistant.json")
+		//		projectConfig, err = config.ReadProjectConfigFromFile(configPath)
+		//		if err != nil {
+		//			logger.Error("Failed to read project config: ", err)
+		//			return
+		//		}
+		//		api.Start(projectConfig)
+		//	}
 	}
 }
 
 func (api *API) attachRoutes(router *mux.Router) {
-	router.HandleFunc("/contracts", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		err := json.NewEncoder(w).Encode(api.slitherOutput)
-		if err != nil {
-			api.logger.Error("Failed to encode contracts: ", err)
-			return
-		}
-	})
-
-	attachFrontendRoutes(router, api.slitherOutput.Contracts, api.targetContracts)
+	attachFrontendRoutes(router, api.contracts, api.targetContracts)
 }
 
 func (api *API) attachMiddleware(router *mux.Router) {

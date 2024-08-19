@@ -53,11 +53,23 @@ func (ch *ConversationService) PromptLLM(ctx context.Context, prompt string, mod
 	messages := ch.conversation
 
 	if model == "claude-3-5-sonnet-20240620" {
-		// Filter out messages from other models
+		// Ensure that the user and assistant messages are in pairs
 		var filteredMessages []types.Message
-		for index, message := range messages {
-			if message.Model == "claude-3-5-sonnet-20240620" || index == 0 || index == 1 {
-				filteredMessages = append(filteredMessages, message)
+
+		for i := 0; i < len(messages); i++ {
+			if messages[i].Role == "user" {
+				if i+1 < len(messages) && messages[i+1].Role == "assistant" {
+					// User message followed by assistant message
+					filteredMessages = append(filteredMessages, messages[i], messages[i+1])
+					i++ // Skip the next message as we've already added it
+				} else if i == len(messages)-1 {
+					// User message is the last message in the array
+					filteredMessages = append(filteredMessages, messages[i])
+				}
+				// If user message is not last and not followed by assistant, it's filtered out
+			} else {
+				// Non-user messages are always included
+				filteredMessages = append(filteredMessages, messages[i])
 			}
 		}
 
