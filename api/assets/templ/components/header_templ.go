@@ -80,7 +80,7 @@ func HeaderTemplate(isSidebarOpen bool, textModels []llm.Model, selectedModel st
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(model.Model)
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(model.Identifier)
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `api/assets/templ/components/header.templ`, Line: 57, Col: 58}
 			}
@@ -92,7 +92,7 @@ func HeaderTemplate(isSidebarOpen bool, textModels []llm.Model, selectedModel st
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if model.Model == selectedModel {
+			if model.Identifier == selectedModel {
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" selected=\"true\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

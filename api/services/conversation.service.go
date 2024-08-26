@@ -4,6 +4,7 @@ import (
 	"assistant/llm"
 	"assistant/types"
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -12,10 +13,22 @@ type ConversationService struct {
 	mu           sync.Mutex
 }
 
-func NewConversationService(targetContracts string) *ConversationService {
-	return &ConversationService{
-		conversation: llm.InitialPrompts(targetContracts),
+func NewConversationService(targetContracts string) (*ConversationService, error) {
+	// Ensure that initial prompts don't surpass the maximum number of tokens
+	initPrompts := llm.InitialPrompts(targetContracts)
+
+	numTokens, err := llm.CalculateNumTokens(generateApiMessages(initPrompts))
+	if err != nil {
+		return nil, err
 	}
+
+	if numTokens > llm.GetDefaultModel().MaxTokenLen {
+		return nil, fmt.Errorf("target contracts exceed maximum token length")
+	}
+
+	return &ConversationService{
+		conversation: initPrompts,
+	}, nil
 }
 
 func conversationResponse(conversation []types.Message) []types.Message {
@@ -82,7 +95,7 @@ func (ch *ConversationService) PromptLLM(ctx context.Context, prompt string, mod
 	}
 
 	ch.mu.Lock()
-	if model == llm.GetImageGenerationModel().Model {
+	if model == llm.GetImageGenerationModel().Identifier {
 		ch.conversation = append(ch.conversation, types.Message{
 			Role:    "assistant",
 			Content: response,

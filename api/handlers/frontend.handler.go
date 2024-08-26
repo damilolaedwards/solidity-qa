@@ -30,16 +30,21 @@ type ViewProps struct {
 	isSidebarOpen bool
 }
 
-func NewFrontendHandler(targetContracts string, contracts []types.Contract) *FrontendHandler {
+func NewFrontendHandler(targetContracts string, contracts []types.Contract) (*FrontendHandler, error) {
 	// Initialize the conversation service
-	conversationService = services.NewConversationService(targetContracts)
+	var err error
+
+	conversationService, err = services.NewConversationService(targetContracts)
+	if err != nil {
+		return nil, err
+	}
 
 	return &FrontendHandler{
 		contracts:     contracts,
 		errorMessages: []int{},
 		isSidebarOpen: true,
-		selectedModel: llm.DefaultModel,
-	}
+		selectedModel: llm.DefaultModelIdentifier,
+	}, nil
 }
 
 func (h *FrontendHandler) Get(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +109,7 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		var model string
 		if data.GenerateImage {
-			model = llm.GetImageGenerationModel().Model
+			model = llm.GetImageGenerationModel().Identifier
 		} else {
 			model = h.selectedModel
 		}

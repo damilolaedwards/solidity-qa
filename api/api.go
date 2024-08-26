@@ -57,17 +57,20 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	// Create a new router
 	router := mux.NewRouter()
 
-	// Attach other middleware
-	api.attachMiddleware(router)
-
 	// Serve static content
 	router.PathPrefix("/static/").HandlerFunc(serveStaticFilesHandler)
 
 	// Attach routes
-	api.attachRoutes(router)
+	err := api.attachRoutes(router)
+	if err != nil {
+		logger.Error("Failed to start server: ", err)
+		return
+	}
+
+	// Attach middleware
+	api.attachMiddleware(router)
 
 	var listener net.Listener
-	var err error
 
 	for i := 0; i < 10; i++ {
 		listener, err = net.Listen("tcp", port)
@@ -104,11 +107,6 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	}
 	defer watcher.Close()
 
-	//err = watcher.Add("assistant.json")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
 	select {
 	// Shutdown the server upon keyboard interrupt
 	case <-sigChan:
@@ -121,38 +119,11 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	// Gracefully shutdown the server if a server error is encountered
 	case err := <-serverErrorChan:
 		logger.Error("Server error: ", err)
-		// Restart server if config file is modified
-		//case event, ok := <-watcher.Events:
-		//	if !ok {
-		//		return
-		//	}
-		//	if event.Op&fsnotify.Write == fsnotify.Write {
-		//		fmt.Println(fmt.Sprintf("%s modifed. Restarting server...", event.Name))
-		//		err := listener.Close()
-		//		if err != nil {
-		//			logger.Error("Failed to shut down server: ", err)
-		//			return
-		//		}
-		//
-		//		workingDirectory, err := os.Getwd()
-		//		if err != nil {
-		//			logger.Error("Failed to obtain working directory", err)
-		//			return
-		//		}
-		//
-		//		configPath := filepath.Join(workingDirectory, "assistant.json")
-		//		projectConfig, err = config.ReadProjectConfigFromFile(configPath)
-		//		if err != nil {
-		//			logger.Error("Failed to read project config: ", err)
-		//			return
-		//		}
-		//		api.Start(projectConfig)
-		//	}
 	}
 }
 
-func (api *API) attachRoutes(router *mux.Router) {
-	attachFrontendRoutes(router, api.contracts, api.targetContracts)
+func (api *API) attachRoutes(router *mux.Router) error {
+	return attachFrontendRoutes(router, api.contracts, api.targetContracts)
 }
 
 func (api *API) attachMiddleware(router *mux.Router) {

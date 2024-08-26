@@ -7,8 +7,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func attachFrontendRoutes(router *mux.Router, contracts []types.Contract, targetContracts string) {
-	ch := handlers.NewFrontendHandler(targetContracts, contracts)
+func attachFrontendRoutes(router *mux.Router, contracts []types.Contract, targetContracts string) error {
+	ch, err := handlers.NewFrontendHandler(targetContracts, contracts)
+	if err != nil {
+		return err
+	}
+
 	frontendRoute := "/"
 
 	router.HandleFunc(frontendRoute, ch.Get).Methods("GET")
@@ -16,4 +20,6 @@ func attachFrontendRoutes(router *mux.Router, contracts []types.Contract, target
 	router.HandleFunc(fmt.Sprintf("%schange-model", frontendRoute), ch.ChangeModel).Methods("POST")
 	router.HandleFunc(fmt.Sprintf("%sreset", frontendRoute), ch.ResetConversation).Methods("POST")
 	router.HandleFunc(fmt.Sprintf("%sprompt", frontendRoute), ch.PromptLLM).Methods("POST")
+
+	return nil
 }
