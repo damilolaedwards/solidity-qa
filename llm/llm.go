@@ -19,12 +19,12 @@ type Model struct {
 	headers     map[string]string
 }
 
-const DefaultModelIdentifier = "gpt-4-turbo"
+const DefaultModelIdentifier = "chatgpt-4o-latest"
 
 var models = map[string]Model{
-	"gpt-4-turbo": {
-		Name:       "GPT 4 Turbo",
-		Identifier: "gpt-4-turbo",
+	"chatgpt-4o-latest": {
+		Name:       "ChatGPT 4o Latest",
+		Identifier: "chatgpt-4o-latest",
 		Generates:  "text",
 		url:        "https://api.openai.com/v1/chat/completions",
 		headers: map[string]string{

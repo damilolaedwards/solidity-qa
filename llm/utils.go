@@ -8,7 +8,8 @@ import (
 func CalculateNumTokens(messages []ApiMessage) (int, error) {
 	var numTokens = 0
 
-	tkm, err := tiktoken.EncodingForModel(DefaultModelIdentifier)
+	// TODO: Calculate token length for specified model
+	tkm, err := tiktoken.EncodingForModel("gpt-4o")
 	if err != nil {
 		return numTokens, fmt.Errorf("unable to get model encoding: %v", err)
 	}
