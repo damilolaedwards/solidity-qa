@@ -9,6 +9,10 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
+		TestContracts: DirectoryConfig{
+			Dir:          "",
+			ExcludePaths: []string{},
+		},
 		Port:              8080,
 		IncludeAbstract:   false,
 		IncludeInterfaces: false,
