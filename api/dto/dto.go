@@ -1,15 +1,15 @@
 package dto
 
 type ChangeModelDto struct {
-	Model string `json:"model" validate:"required"`
+	Model string `json:"model" form:"model" validate:"required"`
 }
 
 type GenerateReportDto struct {
-	ReportType        string `json:"reportType" validate:"required"`
-	AdditionalMessage string `json:"additionalMessage"`
+	ReportType        string `json:"reportType" form:"reportType" validate:"required"`
+	AdditionalMessage string `json:"additionalMessage" form:"additionalMessage"`
 }
 
 type PromptLLMDto struct {
-	Message       string `json:"message" validate:"required"`
-	GenerateImage string `json:"generateImage"`
+	Message       string `json:"message" form:"message" validate:"required"`
+	GenerateImage string `json:"generateImage" form:"message"`
 }

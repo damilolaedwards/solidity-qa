@@ -79,18 +79,9 @@ func (h *FrontendHandler) ChangeModel(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	var data dto.ChangeModelDto
 
-	data.Model = r.FormValue("model")
-
-	//var data dto.GenerateReportDto
-	//err := utils.DecodeAndValidateData(r, &data)
-	//if err != nil {
-	//	ErrorResponse(w, fmt.Sprintf("Error decoding form data: %v", err), http.StatusBadRequest)
-	//	components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
-	//	return
-	//}
-
-	if err := utils.ValidateData(&data); err != nil {
-		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+	if err := utils.DecodeAndValidateFormData(r, &data); err != nil {
+		ErrorResponse(w, fmt.Sprintf("Error processing form data: %v", err), http.StatusBadRequest)
+		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
 	}
 
@@ -107,22 +98,10 @@ func (h *FrontendHandler) ResetConversation(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *FrontendHandler) GenerateReport(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
 	var data dto.GenerateReportDto
 
-	data.ReportType = r.FormValue("reportType")
-	data.AdditionalMessage = r.FormValue("additionalMessage")
-
-	//var data dto.GenerateReportDto
-	//err := utils.DecodeAndValidateData(r, &data)
-	//if err != nil {
-	//	ErrorResponse(w, fmt.Sprintf("Error decoding form data: %v", err), http.StatusBadRequest)
-	//	components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
-	//	return
-	//}
-
-	if err := utils.ValidateData(&data); err != nil {
-		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+	if err := utils.DecodeAndValidateFormData(r, &data); err != nil {
+		ErrorResponse(w, fmt.Sprintf("Error processing form data: %v", err), http.StatusBadRequest)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
 	}
@@ -165,11 +144,8 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	var data dto.PromptLLMDto
 
-	data.Message = r.FormValue("message")
-	data.GenerateImage = r.FormValue("generateImage")
-
-	if err := utils.ValidateData(&data); err != nil {
-		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+	if err := utils.DecodeAndValidateFormData(r, &data); err != nil {
+		ErrorResponse(w, fmt.Sprintf("Error processing form data: %v", err), http.StatusBadRequest)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
 	}

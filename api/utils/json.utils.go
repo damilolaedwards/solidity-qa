@@ -1,31 +1,44 @@
 package utils
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"io"
 	"net/http"
+	"net/url"
 	"strings"
+
+	"github.com/go-playground/form/v4"
+	"github.com/go-playground/validator/v10"
 )
 
-func DecodeAndValidateData[T any](r *http.Request, data *T) error {
-	defer r.Body.Close()
+var decoder *form.Decoder
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return err
+// DecodeAndValidateFormData is a utility function that parses form data from an HTTP request,
+// populates the provided struct with the form values, and validates the data.
+func DecodeAndValidateFormData(r *http.Request, data interface{}) error {
+	// Parse the form data
+	if err := r.ParseForm(); err != nil {
+		return fmt.Errorf("failed to parse form: %w", err)
 	}
 
-	err = json.Unmarshal(body, data)
-	if err != nil {
-		return err
+	// Decode form data into the provided struct
+	if err := decodeFormData(r.Form, data); err != nil {
+		return fmt.Errorf("failed to decode form data: %w", err)
 	}
 
-	err = ValidateData(data)
-	if err != nil {
-		return err
+	// Validate the decoded data
+	if err := ValidateData(data); err != nil {
+		return fmt.Errorf("validation error: %w", err)
+	}
+
+	return nil
+}
+
+// decodeFormData populates the provided struct with form values.
+func decodeFormData(formData url.Values, data interface{}) error {
+	decoder = form.NewDecoder()
+	if err := decoder.Decode(data, formData); err != nil {
+		return fmt.Errorf("failed to decode form data: %w", err)
 	}
 
 	return nil

@@ -5,11 +5,12 @@ go 1.21
 toolchain go1.22.6
 
 require (
+	github.com/a-h/templ v0.2.747
 	github.com/fsnotify/fsnotify v1.7.0
+	github.com/go-playground/form/v4 v4.2.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gorilla/mux v1.8.1
 	github.com/pkoukk/tiktoken-go v0.1.7
-	github.com/rs/cors v1.11.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/net v0.27.0
@@ -17,7 +18,6 @@ require (
 )
 
 require (
-	github.com/a-h/templ v0.2.747 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
