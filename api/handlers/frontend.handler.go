@@ -8,6 +8,7 @@ import (
 	"assistant/api/utils"
 	"assistant/llm"
 	"assistant/types"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -19,18 +20,19 @@ type FrontendHandler struct {
 	errorMessages []int
 	isSidebarOpen bool
 	selectedModel string
+	projectName   string
 }
 
 type ViewProps struct {
+	projectName   string
 	conversation  []types.Message
 	contracts     []types.Contract
-	textModels    []llm.Model
 	errorMessages []int
 	selectedModel string
 	isSidebarOpen bool
 }
 
-func NewFrontendHandler(targetContracts string, contracts []types.Contract) (*FrontendHandler, error) {
+func NewFrontendHandler(targetContracts string, contracts []types.Contract, projectName string) (*FrontendHandler, error) {
 	// Initialize the conversation service
 	var err error
 
@@ -44,6 +46,7 @@ func NewFrontendHandler(targetContracts string, contracts []types.Contract) (*Fr
 		errorMessages: []int{},
 		isSidebarOpen: true,
 		selectedModel: llm.DefaultModelIdentifier,
+		projectName:   projectName,
 	}, nil
 }
 
@@ -54,15 +57,15 @@ func (h *FrontendHandler) Get(w http.ResponseWriter, r *http.Request) {
 	props.contracts = h.contracts
 	props.isSidebarOpen = h.isSidebarOpen
 	props.errorMessages = h.errorMessages
-	props.textModels = llm.GetTextGenerationModels()
 	props.selectedModel = h.selectedModel
+	props.projectName = h.projectName
 
 	// Display the view
 	h.View(w, r, props)
 }
 
 func (h *FrontendHandler) View(w http.ResponseWriter, r *http.Request, props ViewProps) {
-	pages.Home(props.contracts, props.conversation, props.errorMessages, props.isSidebarOpen, props.textModels, h.selectedModel).Render(r.Context(), w)
+	pages.Home(props.projectName, props.contracts, props.conversation, props.errorMessages, props.isSidebarOpen, h.selectedModel).Render(r.Context(), w)
 }
 
 func (h *FrontendHandler) ToggleSidebar(w http.ResponseWriter, r *http.Request) {
@@ -74,10 +77,27 @@ func (h *FrontendHandler) ToggleSidebar(w http.ResponseWriter, r *http.Request) 
 
 func (h *FrontendHandler) ChangeModel(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	h.selectedModel = r.FormValue("model")
+	var data dto.ChangeModelDto
+
+	data.Model = r.FormValue("model")
+
+	//var data dto.GenerateReportDto
+	//err := utils.DecodeAndValidateData(r, &data)
+	//if err != nil {
+	//	ErrorResponse(w, fmt.Sprintf("Error decoding form data: %v", err), http.StatusBadRequest)
+	//	components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+	//	return
+	//}
+
+	if err := utils.ValidateData(&data); err != nil {
+		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	h.selectedModel = data.Model
 
 	// Display the view
-	components.HeaderTemplate(h.isSidebarOpen, llm.GetTextGenerationModels(), h.selectedModel).Render(r.Context(), w)
+	components.HeaderTemplate(h.projectName, h.isSidebarOpen, h.selectedModel).Render(r.Context(), w)
 }
 
 func (h *FrontendHandler) ResetConversation(w http.ResponseWriter, r *http.Request) {
@@ -86,16 +106,70 @@ func (h *FrontendHandler) ResetConversation(w http.ResponseWriter, r *http.Reque
 	components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 }
 
+func (h *FrontendHandler) GenerateReport(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	var data dto.GenerateReportDto
+
+	data.ReportType = r.FormValue("reportType")
+	data.AdditionalMessage = r.FormValue("additionalMessage")
+
+	//var data dto.GenerateReportDto
+	//err := utils.DecodeAndValidateData(r, &data)
+	//if err != nil {
+	//	ErrorResponse(w, fmt.Sprintf("Error decoding form data: %v", err), http.StatusBadRequest)
+	//	components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+	//	return
+	//}
+
+	if err := utils.ValidateData(&data); err != nil {
+		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+		return
+	}
+
+	// Get the request context to handle request cancellations
+	ctx := r.Context()
+
+	responseChan := make(chan []types.Message)
+	errorChan := make(chan error)
+
+	go func() {
+		response, err := conversationService.GenerateReport(ctx, data, h.selectedModel)
+		if err != nil {
+			errorChan <- err
+			return
+		}
+
+		responseChan <- response
+	}()
+
+	select {
+	case err := <-errorChan:
+		log.Println("Error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+
+	case <-ctx.Done():
+		log.Println("Client canceled the request")
+		w.WriteHeader(http.StatusRequestTimeout)
+		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+		return
+
+	case response := <-responseChan:
+		// Display the view
+		components.MainContent(h.contracts, response, h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
+	}
+}
+
 func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	var data dto.PromptLLMDto
 
 	data.Message = r.FormValue("message")
-	data.GenerateImage = r.FormValue("generateImage") == "on"
+	data.GenerateImage = r.FormValue("generateImage")
 
 	if err := utils.ValidateData(&data); err != nil {
-		log.Println("Validation error:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		ErrorResponse(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
 	}
@@ -108,7 +182,7 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		var model string
-		if data.GenerateImage {
+		if data.GenerateImage == "on" {
 			model = llm.GetImageGenerationModel().Identifier
 		} else {
 			model = h.selectedModel
@@ -131,7 +205,6 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 
 	case <-ctx.Done():
-		// The client canceled the request
 		log.Println("Client canceled the request")
 		w.WriteHeader(http.StatusRequestTimeout)
 		h.errorMessages = append(h.errorMessages, len(conversationService.GetConversation())-1)

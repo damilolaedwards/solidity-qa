@@ -27,6 +27,7 @@ type API struct {
 	targetContracts string
 	contracts       []types.Contract
 	logger          *logging.Logger
+	projectName     string
 }
 
 func InitializeAPI(contractCodes string, contracts []types.Contract) *API {
@@ -49,6 +50,9 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	} else {
 		port = fmt.Sprint(":", projectConfig.Port)
 	}
+
+	// Set project name
+	api.projectName = projectConfig.Name
 
 	// Create sub-logger for api module
 	logger := logging.NewLogger(zerolog.InfoLevel)
@@ -123,7 +127,7 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 }
 
 func (api *API) attachRoutes(router *mux.Router) error {
-	return attachFrontendRoutes(router, api.contracts, api.targetContracts)
+	return attachFrontendRoutes(router, api.contracts, api.targetContracts, api.projectName)
 }
 
 func (api *API) attachMiddleware(router *mux.Router) {

@@ -1,0 +1,63 @@
+package components
+
+import "assistant/api/services"
+
+var reportTypes = services.GetReportTypes()
+
+templ GenerateReportDialog() {
+  <dialog id="generateReportDialog" class="bg-gray-800 text-white rounded-lg p-2 backdrop:bg-black/80">
+      <div class="w-[30rem] max-w-[95%] p-6 relative">
+          <button class="absolute top-2 right-2 text-gray-200 hover:text-gray-100 focus:outline-none" onclick="closeDialog()">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>         
+
+          <form class="group" hx-post="/generate-report" hx-trigger="submit" hx-target="main" hx-swap="outerHTML show:#messageList:bottom" hx-disabled-elt="find select, find textarea, find button">
+            <h2 class="text-2xl text-center font-semibold mt-1 mb-3">Generate Report</h2>
+
+            <div class="mb-4">
+              <label for="reportType" class="block text-sm font-medium mb-1">Type</label>
+              <select name="reportType" id="reportType" class="w-full bg-gray-800 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-5" id="type">
+                for _, reportType := range reportTypes {
+                  <option class="bg-gray-800" value={reportType}>{reportType}</option>
+                }
+              </select>
+
+              <label for="additionalMessage" class="block text-sm font-medium mb-1">Additonal Message</label>
+              <textarea name="additionalMessage" id="additionalMessage" rows="3" id="additionalMessage" class="w-full bg-gray-800 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-400 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2" hx-disabled>
+              <span
+                class="w-4 h-4 -rotate-90 group-[.htmx-request]:hidden"
+              >
+                Generate
+              </span>
+
+              <span
+                class="htmx-indicator hidden group-[.htmx-request]:inline"
+                stroke="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 384 512"
+              >
+                Please wait
+              </span>
+            </button>
+          </form>
+      </div>
+  </dialog>
+
+  <script>
+    function openDialog() {
+      document.getElementById('generateReportDialog')?.showModal();
+    }
+    function closeDialog() {
+      document.getElementById('generateReportDialog').close();
+    }
+
+    document.getElementById('generateReportDialog').addEventListener("htmx:responseError", () => document.getElementById('generateReportDialog').close());
+    document.getElementById('generateReportDialog').addEventListener("htmx:afterRequest", () => document.getElementById('generateReportDialog').close());
+  </script>
+}

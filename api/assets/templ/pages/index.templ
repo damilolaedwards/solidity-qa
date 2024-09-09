@@ -2,11 +2,10 @@ package pages
 
 import (
     "assistant/types"
-    "assistant/llm"
     "assistant/api/assets/templ/components"
 )
 
-templ Home(contracts []types.Contract, conversation []types.Message, errorMessages []int, isSidebarOpen bool, textModels []llm.Model, selectedModel string) {
+templ Home(projectName string, contracts []types.Contract, conversation []types.Message, errorMessages []int, isSidebarOpen bool, selectedModel string) {
     <html lang="en">
 
     <head>
@@ -37,19 +36,19 @@ templ Home(contracts []types.Contract, conversation []types.Message, errorMessag
             }'
         />
         <script src="https://cdn.tailwindcss.com"></script>
-        <title>Assistant</title>
+        <title>Audit Assistant</title>
     </head>
 
     <body>
         <div class="flex flex-col h-screen bg-gray-900 text-white">
-            @components.HeaderTemplate(isSidebarOpen, textModels, selectedModel)
+            @components.HeaderTemplate(projectName, isSidebarOpen, selectedModel)
             @components.MainContent(contracts, conversation, errorMessages, isSidebarOpen)
+            @components.GenerateReportDialog()
         </div>
 
         <script type="module"
             src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
         <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
-        // <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
         <script src="/static/js/vendor/notiflix.js"></script>
         <script src="/static/js/script.js"></script>

@@ -1,11 +1,35 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"io"
+	"net/http"
 	"strings"
 )
+
+func DecodeAndValidateData[T any](r *http.Request, data *T) error {
+	defer r.Body.Close()
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, data)
+	if err != nil {
+		return err
+	}
+
+	err = ValidateData(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func ValidateData(v interface{}) error {
 	validate := validator.New(validator.WithRequiredStructEnabled())

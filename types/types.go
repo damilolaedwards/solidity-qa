@@ -48,4 +48,5 @@ type Message struct {
 	Content string `json:"content"`
 	Type    string `json:"type"`
 	Model   string `json:"model"`
+	Hidden  bool   `json:"display"`
 }

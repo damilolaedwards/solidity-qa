@@ -1,11 +1,6 @@
-const dialog = document.getElementById('generateReportDialog');
+Notiflix.Loading.hourglass();
 
-function openDialog() {
-  dialog.showModal();
-}
-function closeDialog() {
-  dialog.close();
-}
+document.addEventListener('DOMContentLoaded', () => Notiflix.Loading.remove());
 
 function askLLMAboutFunction(e) {
   const messageBox = document.getElementById('messageBox');
@@ -35,6 +30,23 @@ function triggerFormSubmit() {
   form.dispatchEvent(event);
 }
 
+function copyToClipboard(e) {
+  const messageId = e.getAttribute('data-message-id');
+
+  const content = document
+    .getElementById(messageId)
+    .getAttribute('data-message');
+
+  navigator.clipboard.writeText(content).then(
+    function () {
+      Notiflix.Notify.success('Content copied to clipboard!');
+    },
+    function (err) {
+      console.error('Could not copy text: ', err);
+    }
+  );
+}
+
 const cancelFormRequest = () => {
   htmx.trigger('#promptForm', 'htmx:abort');
 };
@@ -47,3 +59,13 @@ document
       'An error occurred. Please check your logs for the error message.'
     );
   });
+
+htmx.on('htmx:timeout', function (evt) {
+  console.error('HTMX ON', evt);
+  Notiflix.Notify.failure('Request timed out. Please refresh the page.');
+});
+
+document.body.addEventListener('htmx:timeout', function (evt) {
+  console.error('Document body:', evt);
+  Notiflix.Notify.failure('Request timed out. Please refresh the page.');
+});

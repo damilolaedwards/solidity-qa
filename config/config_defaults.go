@@ -5,6 +5,7 @@ package config
 func GetDefaultProjectConfig() (*ProjectConfig, error) {
 	// Create a project configuration
 	projectConfig := &ProjectConfig{
+		Name: "example",
 		TargetContracts: DirectoryConfig{
 			Dir:          "",
 			ExcludePaths: []string{},

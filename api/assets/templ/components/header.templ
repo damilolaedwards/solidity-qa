@@ -5,31 +5,7 @@ import "assistant/llm"
 
 var dialogHandler = templ.NewOnceHandle()
 
-templ GenerateReportDialog() {
-    <dialog id="generateReportDialog" class="bg-gray-800 text-white rounded-lg p-2 backdrop:bg-black/80">
-        <div class="p-6 relative">
-            <button class="absolute top-2 right-2 text-gray-200 hover:text-gray-100 focus:outline-none" onclick="closeDialog()">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>         
-
-            <form>
-                <h2 class="text-2xl text-center font-semibold mt-1 mb-3">Generate Report</h2>
-
-                <div class="mb-4">
-                    <label for="input1" class="block text-sm font-medium mb-1">Type</label>
-                    <input type="text" id="input1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <button type="submit" class="w-full bg-blue-400 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">Submit</button>
-            </form>
-        </div>
-    </dialog>
-}
-
-templ HeaderTemplate(isSidebarOpen bool, textModels []llm.Model, selectedModel string) {
+templ HeaderTemplate(projectName string, isSidebarOpen bool, selectedModel string) {
     <header class="z-[100] flex justify-between items-center p-4 bg-gray-800 sl-theme-dark">
         <div class="flex items-center">
             <button hx-post="/toggle-sidebar" hx-trigger="click" hx-target="main" hx-swap="outerHTML" class="mr-4 text-white focus:outline-none" aria-label="Toggle sidebar"
@@ -41,7 +17,7 @@ templ HeaderTemplate(isSidebarOpen bool, textModels []llm.Model, selectedModel s
                         clip-rule="evenodd"></path>
                 </svg>
             </button>
-            <h1 class="text-xl font-bold">Assistant</h1>
+            <h1 class="text-xl font-bold">{projectName}</h1>
         </div>
 
         <sl-dropdown>
@@ -53,15 +29,13 @@ templ HeaderTemplate(isSidebarOpen bool, textModels []llm.Model, selectedModel s
         </sl-dropdown>
 
         <select class="max-w-44 bg-gray-800" name="model" hx-post="/change-model" hx-trigger="change" hx-target="header" hx-swap="outerHTML" hx-disabled-elt="this">
-          for _, model := range textModels {
-            <option class="bg-gray-800" value={model.Model}
-                if model.Model == selectedModel {
+          for _, model := range llm.GetTextGenerationModels() {
+            <option class="bg-gray-800" value={model.Identifier}
+                if model.Identifier == selectedModel {
                     selected="true"
                 }
             >{model.Name}</option>
           }
         </select>
-
-        @GenerateReportDialog()
     </header>
 }

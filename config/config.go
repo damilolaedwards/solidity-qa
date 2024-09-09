@@ -3,35 +3,41 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
+	"strings"
 )
 
 type DirectoryConfig struct {
 	// Dir describes the path to the directory
-	Dir string `json:"directory"`
+	Dir string `json:"directory" description:"The directory path relative to the project root"`
 
 	// ExcludePaths describes the paths that should be excluded when parsing the directory
-	ExcludePaths []string `json:"excludePaths"`
+	ExcludePaths []string `json:"excludePaths" description:"Paths that should be excluded when parsing the directory"`
 }
 
 type ProjectConfig struct {
+	// Name describes the project name.
+	Name string `json:"name" description:"The project name"`
+
 	// TargetContracts describes the directory that holds the contracts to be fuzzed.
-	TargetContracts DirectoryConfig `json:"targetContracts"`
+	TargetContracts DirectoryConfig `json:"targetContracts" description:"The directory that holds the contracts to be fuzzed"`
 
 	// TestContracts describes the directory that holds the test contracts
-	TestContracts DirectoryConfig `json:"testContracts"`
+	TestContracts DirectoryConfig `json:"testContracts" description:"The directory that holds the test contracts"`
 
 	// Port describes the port that the API will be running on
-	Port int `json:"port"`
+	Port int `json:"port" description:"The port that the API will be running on"`
 
 	// IncludeInterfaces describes whether interfaces will be included in the slither output
-	IncludeInterfaces bool `json:"includeInterfaces"`
+	IncludeInterfaces bool `json:"includeInterfaces" description:"Whether interfaces will be included in the slither output"`
 
 	// IncludeAbstract describes whether abstract contracts will be included in the slither output
-	IncludeAbstract bool `json:"includeAbstract"`
+	IncludeAbstract bool `json:"includeAbstract" description:"Whether abstract contracts will be included in the slither output"`
 
 	// IncludeLibraries describes whether libraries will be included in the slither output
-	IncludeLibraries bool `json:"includeLibraries"`
+	IncludeLibraries bool `json:"includeLibraries" description:"Whether libraries will be included in the slither output"`
 }
 
 // ReadProjectConfigFromFile reads a JSON-serialized ProjectConfig from a provided file path.
@@ -56,11 +62,58 @@ func ReadProjectConfigFromFile(path string) (*ProjectConfig, error) {
 	return projectConfig, nil
 }
 
-// WriteToFile writes the ProjectConfig to a provided file path in a JSON-serialized format.
+// customMarshal is a helper function to marshal a struct with inline comments
+func customMarshal(v interface{}) ([]byte, error) {
+	var result strings.Builder
+	result.WriteString("{\n")
+
+	t := reflect.TypeOf(v)
+	value := reflect.ValueOf(v)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		value = value.Elem()
+	}
+
+	fields := make([]string, 0, t.NumField())
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		jsonTag := strings.Split(field.Tag.Get("json"), ",")[0]
+		description := field.Tag.Get("description")
+		fieldValue := value.Field(i).Interface()
+
+		if jsonTag != "" {
+			var fieldStr string
+			if field.Type.Kind() == reflect.Struct {
+				// For nested structs, recursively call customMarshal
+				nestedJSON, err := customMarshal(fieldValue)
+				if err != nil {
+					return nil, err
+				}
+				fieldStr = fmt.Sprintf("\t%q: %s // %s", jsonTag, string(nestedJSON), description)
+			} else {
+				fieldJSON, err := json.Marshal(fieldValue)
+				if err != nil {
+					return nil, err
+				}
+				fieldStr = fmt.Sprintf("\t%q: %s // %s", jsonTag, string(fieldJSON), description)
+			}
+			fields = append(fields, fieldStr)
+		}
+	}
+
+	result.WriteString(strings.Join(fields, ",\n"))
+	result.WriteString("\n}")
+
+	return []byte(result.String()), nil
+}
+
+// WriteToFile writes the ProjectConfig to a provided file path in a JSON-serialized format with comments.
 // Returns an error if one occurs.
 func (p *ProjectConfig) WriteToFile(path string) error {
-	// Serialize the configuration
-	b, err := json.MarshalIndent(p, "", "\t")
+	// Serialize the configuration with comments
+	b, err := customMarshal(p)
 	if err != nil {
 		return err
 	}
@@ -77,6 +130,9 @@ func (p *ProjectConfig) WriteToFile(path string) error {
 // Validate validates that the ProjectConfig meets certain requirements.
 // Returns an error if one occurs.
 func (p *ProjectConfig) Validate() error {
+	if p.Name == "" {
+		return errors.New("project configuration must specify project name")
+	}
 	if p.TargetContracts.Dir == "" {
 		return errors.New("project configuration must specify target contracts directory")
 	}

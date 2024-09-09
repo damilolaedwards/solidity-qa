@@ -21,7 +21,7 @@ type Model struct {
 
 const DefaultModelIdentifier = "chatgpt-4o-latest"
 
-var models = map[string]Model{
+var Models = map[string]Model{
 	"chatgpt-4o-latest": {
 		Name:       "ChatGPT 4o Latest",
 		Identifier: "chatgpt-4o-latest",
@@ -115,7 +115,7 @@ func getModel(model string) (Model, error) {
 	if model == "" {
 		model = DefaultModelIdentifier
 	}
-	m, ok := models[model]
+	m, ok := Models[model]
 	if !ok {
 		return Model{}, fmt.Errorf("unknown model: %s", model)
 	}
@@ -165,6 +165,7 @@ func handleOpenAITextResponse(body []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	if len(response.Choices) > 0 {
 		return response.Choices[0].Message.Content, nil
 	}
@@ -200,13 +201,13 @@ func handleClaudeTextResponse(body []byte) (string, error) {
 }
 
 func GetDefaultModel() Model {
-	return models[DefaultModelIdentifier]
+	return Models[DefaultModelIdentifier]
 }
 
 func GetTextGenerationModels() []Model {
 	var textModels []Model
 
-	for _, m := range models {
+	for _, m := range Models {
 		if m.Generates == "text" {
 			textModels = append(textModels, m)
 		}
@@ -215,7 +216,7 @@ func GetTextGenerationModels() []Model {
 }
 
 func GetImageGenerationModel() Model {
-	for _, m := range models {
+	for _, m := range Models {
 		if m.Generates == "image" {
 			return m
 		}
