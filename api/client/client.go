@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -49,7 +50,7 @@ func FetchFileContent(url string, headers map[string]string) (string, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			fmt.Println("Error closing response body: ", err)
+			log.Println("Error closing response body: ", err)
 		}
 	}(resp.Body)
 

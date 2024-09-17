@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"assistant/logging"
-	"github.com/rs/zerolog"
 	"os"
+
+	"github.com/rs/zerolog"
 
 	"github.com/spf13/cobra"
 )
@@ -11,8 +12,8 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:           "assistant",
-	Short:         "This is a medusa fuzzing assistant",
-	Long:          `This application is an AI-powered fuzzing assistant to be used alongside Medusa.`,
+	Short:         "This is an AI-powered smart contract auditing assistant",
+	Long:          `This application is a CLI tool that leverages on Slither and AI to assist smart contract auditors.`,
 	SilenceUsage:  true,
 	SilenceErrors: false,
 }

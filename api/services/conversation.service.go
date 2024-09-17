@@ -11,16 +11,16 @@ import (
 )
 
 var ReportTypes = map[string]string{
-	"Access Control":       "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/access_controls.md",
-	"Auditing and Logging": "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/auditing_and_logging.md",
-	"Authentication":       "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/authentication.md",
-	"Configuration":        "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/configuration.md",
-	"Data Validation":      "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/data_validation.md",
-	"Denial of Service":    "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/denial_of_service.md",
-	"Patching":             "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/patching.md",
-	"Testing":              "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/testing.md",
-	"Timing":               "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/timing.md",
-	"Undefined Behaviour":  "https://raw.githubusercontent.com/brainycodelab/report-datasets/master/undefined_behaviour.md",
+	"Access Control":       "https://raw.githubusercontent.com/crytic/report-dataset/master/access_controls.md",
+	"Auditing and Logging": "https://raw.githubusercontent.com/crytic/report-dataset/master/auditing_and_logging.md",
+	"Authentication":       "https://raw.githubusercontent.com/crytic/report-dataset/master/authentication.md",
+	"Configuration":        "https://raw.githubusercontent.com/crytic/report-dataset/master/configuration.md",
+	"Data Validation":      "https://raw.githubusercontent.com/crytic/report-dataset/master/data_validation.md",
+	"Denial of Service":    "https://raw.githubusercontent.com/crytic/report-dataset/master/denial_of_service.md",
+	"Patching":             "https://raw.githubusercontent.com/crytic/report-dataset/master/patching.md",
+	"Testing":              "https://raw.githubusercontent.com/crytic/report-dataset/master/testing.md",
+	"Timing":               "https://raw.githubusercontent.com/crytic/report-dataset/master/timing.md",
+	"Undefined Behaviour":  "https://raw.githubusercontent.com/crytic/report-dataset/master/undefined_behaviour.md",
 }
 
 type ConversationService struct {

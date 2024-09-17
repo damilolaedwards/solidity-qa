@@ -6,53 +6,98 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-//go:embed get_target_contracts.py
-var getTargetContractsScript string
+//go:embed parse_contracts.py
+var parseContractsScript string
 
-func GetContractsDataUsingSlither(projectConfig *config.ProjectConfig, outputFile *os.File) error {
+func runSlitherOnLocal(targetDir string, targetExcludePaths []string, testDir string, testExcludePaths []string, outputFile *os.File) error {
 	// Run the command
 	// Create a temporary file to hold the Python script
 	tmpfile, err := os.CreateTemp("", "script-*.py")
 	if err != nil {
-		fmt.Println("Error creating temporary file:", err)
+		log.Println("Error creating temporary file:", err)
 		return nil
 	}
 	defer func(name string) {
 		err := os.Remove(name)
 		if err != nil {
-			fmt.Println("Error removing temporary file:", err)
+			log.Println("Error removing temporary file:", err)
 		}
 	}(tmpfile.Name()) // Clean up
 
 	// Write the Python script to the temporary file
-	if _, err := tmpfile.Write([]byte(getTargetContractsScript)); err != nil {
-		fmt.Println("Error writing to temporary file:", err)
+	if _, err := tmpfile.Write([]byte(parseContractsScript)); err != nil {
+		log.Println("Error writing to temporary file:", err)
 		return nil
 	}
 	if err := tmpfile.Close(); err != nil {
-		fmt.Println("Error closing temporary file:", err)
+		log.Println("Error closing temporary file:", err)
 		return nil
 	}
 
 	args := []string{"--target", ".", "--out", outputFile.Name(),
-		"--contracts-dir", projectConfig.TargetContracts.Dir}
+		"--contracts-dir", targetDir}
 
-	if projectConfig.TargetContracts.ExcludePaths != nil && len(projectConfig.TargetContracts.ExcludePaths) > 0 {
+	if len(targetExcludePaths) > 0 {
 		args = append(args, "--exclude-contract-paths",
-			strings.Join(projectConfig.TargetContracts.ExcludePaths, ","))
+			strings.Join(targetExcludePaths, ","))
 	}
 
-	if projectConfig.TestContracts.Dir != "" {
-		args = append(args, "--tests-dir", projectConfig.TestContracts.Dir)
-		if projectConfig.TestContracts.ExcludePaths != nil && len(projectConfig.TestContracts.ExcludePaths) > 0 {
-			args = append(args, "--exclude-test-paths", strings.Join(projectConfig.TestContracts.ExcludePaths, ","))
+	if testDir != "" {
+		args = append(args, "--tests-dir", testDir)
+		if len(testExcludePaths) > 0 {
+			args = append(args, "--exclude-test-paths", strings.Join(testExcludePaths, ","))
 		}
 	}
+
+	// Prepare the command
+	cmd := exec.Command("python3", append([]string{tmpfile.Name()}, args...)...)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("error running slither: %v\n", err)
+		fmt.Printf("stderr: %s\n", output)
+		return err
+	}
+
+	// Print out slither output
+	fmt.Println(string(output))
+
+	return nil
+}
+
+func runSlitherOnchain(address string, networkPrefix string, apiKey string, outputFile *os.File) error {
+	// Run the command
+	// Create a temporary file to hold the Python script
+	tmpfile, err := os.CreateTemp("", "script-*.py")
+	if err != nil {
+		log.Println("Error creating temporary file:", err)
+		return nil
+	}
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			log.Println("Error removing temporary file:", err)
+		}
+	}(tmpfile.Name()) // Clean up
+
+	// Write the Python script to the temporary file
+	if _, err := tmpfile.Write([]byte(parseContractsScript)); err != nil {
+		log.Println("Error writing to temporary file:", err)
+		return nil
+	}
+	if err := tmpfile.Close(); err != nil {
+		log.Println("Error closing temporary file:", err)
+		return nil
+	}
+
+	args := []string{"--target", address, "--out", outputFile.Name(), "--onchain",
+		"--network-prefix", networkPrefix, "--api-key", apiKey}
 
 	// Prepare the command
 	cmd := exec.Command("python3", append([]string{tmpfile.Name()}, args...)...)
@@ -81,7 +126,7 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 	defer func(name string) {
 		err := os.Remove(name)
 		if err != nil {
-			fmt.Println("Error removing temporary file:", err)
+			log.Println("Error removing temporary file:", err)
 		}
 	}(tmpfile.Name()) // Clean up
 
@@ -91,10 +136,16 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 		return nil, "", fmt.Errorf("unable to read directory")
 	}
 
-	// Run slither on project
-	err = GetContractsDataUsingSlither(projectConfig, tmpfile)
-	if err != nil {
-		return nil, "", err
+	if projectConfig.OnChainConfig.Enabled {
+		err = runSlitherOnchain(projectConfig.OnChainConfig.Address, projectConfig.OnChainConfig.NetworkPrefix, projectConfig.OnChainConfig.ApiKey, tmpfile)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		err = runSlitherOnLocal(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths, projectConfig.TestContracts.Dir, projectConfig.TestContracts.ExcludePaths, tmpfile)
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	// Read the contents of the temporary file

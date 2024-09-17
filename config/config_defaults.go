@@ -14,6 +14,12 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
+		OnChainConfig: OnChainConfig{
+			Enabled:       false,
+			Address:       "",
+			NetworkPrefix: "mainnet",
+			ApiKey:        "",
+		},
 		Port:              8080,
 		IncludeAbstract:   false,
 		IncludeInterfaces: false,

@@ -147,7 +147,6 @@ func serveStaticFile(w http.ResponseWriter, r *http.Request, filePath string) {
 	file, err := staticAssets.Open(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println("Not found: " + filePath)
 			http.NotFound(w, r)
 		} else {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -163,7 +162,6 @@ func serveStaticFile(w http.ResponseWriter, r *http.Request, filePath string) {
 	}
 
 	if info.IsDir() {
-		fmt.Println("Is dir: " + filePath)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}

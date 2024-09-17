@@ -51,7 +51,7 @@ var Models = map[string]Model{
 		url:        "https://api.anthropic.com/v1/messages",
 		headers: map[string]string{
 			"Content-Type":      "application/json",
-			"x-api-key":         os.Getenv("CLAUDE_API_KEY"),
+			"x-api-key":         os.Getenv("ANTHROPIC_API_KEY"),
 			"anthropic-version": "2023-06-01",
 		},
 		MaxTokenLen: 1048576,

@@ -3,55 +3,57 @@ package cmd
 import (
 	"assistant/api"
 	"assistant/config"
+	"assistant/internal/slither"
 	"assistant/logging/colors"
-	"assistant/slither"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
-var generateCmd = &cobra.Command{
-	Use:           "generate",
-	Short:         "Generate invariants for Medusa",
-	Long:          `Generate invariants for Medusa`,
-	Args:          cmdValidateGenerateArgs,
-	RunE:          cmdRunGenerate,
+var startCmd = &cobra.Command{
+	Use:           "start",
+	Short:         "Parses contracts and spins up frontend server on specified port",
+	Long:          "Parses contracts using Slither and spins up frontend server on specified port",
+	Args:          cmdValidateStartArgs,
+	RunE:          cmdRunStart,
 	SilenceUsage:  true,
 	SilenceErrors: false,
 }
 
 func init() {
-	// Add all the flags allowed for the generate command
-	err := addGenerateFlags()
+	// Add all the flags allowed for the start command
+	err := addStartFlags()
 	if err != nil {
 		cmdLogger.Panic("Failed to initialize the fuzz command", err)
 	}
 
-	// Add the generate command and its associated flags to the root command
-	rootCmd.AddCommand(generateCmd)
+	// Add the start command and its associated flags to the root command
+	rootCmd.AddCommand(startCmd)
 }
 
-// cmdValidateGenerateArgs makes sure that there are no positional arguments provided to the generate command
-func cmdValidateGenerateArgs(cmd *cobra.Command, args []string) error {
+// cmdValidateStartArgs makes sure that there are only one positional argument can be provided to the start command
+func cmdValidateStartArgs(cmd *cobra.Command, args []string) error {
 	// Make sure we have no positional args
-	if err := cobra.NoArgs(cmd, args); err != nil {
-		err = fmt.Errorf("generate does not accept any positional arguments, only flags and their associated values")
-		cmdLogger.Error("Failed to validate args to the generate command", err)
+	if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
+		err = fmt.Errorf("start can only accept one positional argument, target contracts directory")
+		cmdLogger.Error("Failed to validate args to the start command", err)
 		return err
 	}
+
 	return nil
 }
 
-// cmdRunGenerate runs the generate CLI command
-func cmdRunGenerate(cmd *cobra.Command, args []string) error {
+// cmdRunStart runs the start CLI command
+func cmdRunStart(cmd *cobra.Command, args []string) error {
 	var projectConfig *config.ProjectConfig
 
 	// Check to see if --config flag was used and store the value of --config flag
 	configFlagUsed := cmd.Flags().Changed("config")
 	configPath, err := cmd.Flags().GetString("config")
 	if err != nil {
-		cmdLogger.Error("Failed to run the generate command", err)
+		cmdLogger.Error("Failed to run the start command", err)
 		return err
 	}
 
@@ -59,7 +61,7 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 	if !configFlagUsed {
 		workingDirectory, err := os.Getwd()
 		if err != nil {
-			cmdLogger.Error("Failed to run the generate command", err)
+			cmdLogger.Error("Failed to run the start command", err)
 			return err
 		}
 		configPath = filepath.Join(workingDirectory, DefaultProjectConfigFilename)
@@ -74,14 +76,14 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 		cmdLogger.Info("Reading the configuration file at: ", colors.Bold, configPath, colors.Reset)
 		projectConfig, err = config.ReadProjectConfigFromFile(configPath)
 		if err != nil {
-			cmdLogger.Error("Failed to run the generate command", err)
+			cmdLogger.Error("Failed to run the start command", err)
 			return err
 		}
 	}
 
 	// Possibility #2: If the --config flag was used, and we couldn't find the file, we'll throw an error
 	if configFlagUsed && existenceError != nil {
-		cmdLogger.Error("Failed to run the generate command", err)
+		cmdLogger.Error("Failed to run the start command", err)
 		return existenceError
 	}
 
@@ -91,33 +93,44 @@ func cmdRunGenerate(cmd *cobra.Command, args []string) error {
 
 		projectConfig, err = config.GetDefaultProjectConfig()
 		if err != nil {
-			cmdLogger.Error("Failed to run the generate command", err)
+			cmdLogger.Error("Failed to run the start command", err)
 			return err
 		}
 	}
 
 	// Update the project configuration given whatever flags were set using the CLI
-	err = updateProjectConfigWithGenerateFlags(cmd, projectConfig)
+	err = updateProjectConfigWithStartFlags(cmd, projectConfig)
 	if err != nil {
-		cmdLogger.Error("Failed to run the generate command", err)
+		cmdLogger.Error("Failed to run the start command", err)
 		return err
 	}
 
 	// Validate project config
 	err = projectConfig.Validate()
 	if err != nil {
-		cmdLogger.Error("Failed to run the generate command", err)
+		cmdLogger.Error("Failed to run the start command", err)
 		return err
 	}
 
-	// Run slither
-	cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, "\n")
+	// Update target if provided as a positional argument
+	if len(args) == 1 {
+		projectConfig.TargetContracts.Dir = args[0]
+	}
+
+	if projectConfig.OnChainConfig.Enabled {
+		cmdLogger.Info("Running Slither on contract at address: ", colors.Green, projectConfig.OnChainConfig.Address, colors.Reset)
+	} else {
+		cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, "\n")
+	}
+
+	// Parse contracts
 	contracts, contractCodes, err := slither.ParseContracts(projectConfig)
 	if err != nil {
-		cmdLogger.Error("Failed to run the generate command", err)
+		cmdLogger.Error("Failed to run the start command", err)
 		return err
 	}
-	cmdLogger.Info("Successfully ran Slither on the target contracts directory")
+
+	cmdLogger.Info("Successfully ran Slither on target")
 
 	// Start the API
 	api.InitializeAPI(contractCodes, contracts).Start(projectConfig)

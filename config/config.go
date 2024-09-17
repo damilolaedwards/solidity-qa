@@ -17,6 +17,20 @@ type DirectoryConfig struct {
 	ExcludePaths []string `json:"excludePaths" description:"Paths that should be excluded when parsing the directory"`
 }
 
+type OnChainConfig struct {
+	// Enabled describes whether an onchain contract is to be used
+	Enabled bool `json:"-"`
+
+	// Address describes the address of the onchain contract
+	Address string `json:"-"`
+
+	// ApiKey describes the API key to be used for the network
+	ApiKey string `json:"-"`
+
+	// NetworkPrefix describes the network prefix of the onchain contract
+	NetworkPrefix string `json:"-"`
+}
+
 type ProjectConfig struct {
 	// Name describes the project name.
 	Name string `json:"name" description:"The project name"`
@@ -26,6 +40,9 @@ type ProjectConfig struct {
 
 	// TestContracts describes the directory that holds the test contracts
 	TestContracts DirectoryConfig `json:"testContracts" description:"The directory that holds the test contracts"`
+
+	// OnChainConfig describes the onchain configuration for the project
+	OnChainConfig OnChainConfig `json:"-"`
 
 	// Port describes the port that the API will be running on
 	Port int `json:"port" description:"The port that the API will be running on"`
@@ -83,6 +100,11 @@ func customMarshal(v interface{}) ([]byte, error) {
 		description := field.Tag.Get("description")
 		fieldValue := value.Field(i).Interface()
 
+		// Skip fields with json:"-" tag
+		if jsonTag == "-" {
+			continue
+		}
+
 		if jsonTag != "" {
 			var fieldStr string
 			if field.Type.Kind() == reflect.Struct {
@@ -133,8 +155,18 @@ func (p *ProjectConfig) Validate() error {
 	if p.Name == "" {
 		return errors.New("project configuration must specify project name")
 	}
-	if p.TargetContracts.Dir == "" {
-		return errors.New("project configuration must specify target contracts directory")
+
+	if p.OnChainConfig.Enabled {
+		if p.OnChainConfig.Address == "" {
+			return errors.New("contract address must be specified in onchain mode")
+		}
+		if p.OnChainConfig.ApiKey == "" {
+			return errors.New("API key must be specified in onchain mode")
+		}
+	} else {
+		if p.TargetContracts.Dir == "" {
+			return errors.New("target must be specified in local mode")
+		}
 	}
 
 	return nil
