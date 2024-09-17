@@ -94,7 +94,11 @@ templ ChatInterface(conversation []types.Message, suggestions []Suggestion, erro
           }
         }
 
-        processMarkdownContent();
+        await processMarkdownContent();
+
+        // Scroll to the top of the last message when a new message is added
+        const messageList = document.getElementById('messageList');
+        messageList.scrollTop = messageList.scrollHeight;
       </script>
     }
     <div class="mt-8 w-full max-w-4xl">
