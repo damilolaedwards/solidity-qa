@@ -129,7 +129,7 @@ func (h *FrontendHandler) GenerateReport(w http.ResponseWriter, r *http.Request)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 
 	case <-ctx.Done():
-		log.Println("Client canceled the request")
+		log.Println("Request timed out/was cancelled")
 		w.WriteHeader(http.StatusRequestTimeout)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 		return
@@ -181,7 +181,7 @@ func (h *FrontendHandler) PromptLLM(w http.ResponseWriter, r *http.Request) {
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
 
 	case <-ctx.Done():
-		log.Println("Client canceled the request")
+		log.Println("Request timed out/was cancelled")
 		w.WriteHeader(http.StatusRequestTimeout)
 		h.errorMessages = append(h.errorMessages, len(conversationService.GetConversation())-1)
 		components.MainContent(h.contracts, conversationService.GetConversation(), h.errorMessages, h.isSidebarOpen).Render(r.Context(), w)
