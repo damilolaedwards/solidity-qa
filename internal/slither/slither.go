@@ -130,18 +130,18 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 		}
 	}(tmpfile.Name()) // Clean up
 
-	// Check if provided directory is a directory
-	info, err := os.Stat(projectConfig.TargetContracts.Dir)
-	if err != nil || !info.IsDir() {
-		return nil, "", fmt.Errorf("unable to read directory")
-	}
-
 	if projectConfig.OnChainConfig.Enabled {
 		err = runSlitherOnchain(projectConfig.OnChainConfig.Address, projectConfig.OnChainConfig.NetworkPrefix, projectConfig.OnChainConfig.ApiKey, tmpfile)
 		if err != nil {
 			return nil, "", err
 		}
 	} else {
+		// Check if provided directory is a directory
+		info, err := os.Stat(projectConfig.TargetContracts.Dir)
+		if err != nil || !info.IsDir() {
+			return nil, "", fmt.Errorf("unable to read directory")
+		}
+
 		err = runSlitherOnLocal(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths, projectConfig.TestContracts.Dir, projectConfig.TestContracts.ExcludePaths, tmpfile)
 		if err != nil {
 			return nil, "", err
