@@ -160,10 +160,14 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 		return nil, "", err
 	}
 
-	contractCodes := getContractCodes(slitherOutput.Contracts)
+	var filteredContracts []types.Contract
+	if projectConfig.OnChainConfig.Enabled {
+		filteredContracts = filterSlitherOutput(slitherOutput.Contracts, !projectConfig.OnChainConfig.ExcludeInterfaces, true, true)
+	} else {
+		filteredContracts = filterSlitherOutput(slitherOutput.Contracts, projectConfig.IncludeInterfaces, projectConfig.IncludeAbstract, projectConfig.IncludeLibraries)
+	}
 
-	// Filter slither output
-	filteredContracts := filterSlitherOutput(slitherOutput.Contracts, projectConfig.IncludeInterfaces, projectConfig.IncludeAbstract, projectConfig.IncludeLibraries)
+	contractCodes := getContractCodes(slitherOutput.Contracts)
 
 	return filteredContracts, contractCodes, nil
 }

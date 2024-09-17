@@ -107,7 +107,7 @@ crytic-assistant start ./path/to/contracts
 #### With Options
 
 ```bash
-crytic-assistant start --config="config.json" --onchain --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
+crytic-assistant start --config="config.json" --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
 ```
 
 This will use the specified configuration file and spin up the session, fetching contract source code from Etherscan if the `onchain` flag is set.
@@ -121,6 +121,7 @@ This will use the specified configuration file and spin up the session, fetching
   - Supported networks: `mainnet`, `arbitrum`, `optimism`, `polygon`, `bsc`, `avalanche`, `fantom`
   - Default: `mainnet`
 - `--api-key`: API key for fetching on-chain contract data.
+- `--exclude-interfaces`: Specifies if interfaces should be excluded from the analysis.
 
 ### Example Config File
 

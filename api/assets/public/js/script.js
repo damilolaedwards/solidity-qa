@@ -59,13 +59,3 @@ document
       'An error occurred. Please check your logs for the error message.'
     );
   });
-
-htmx.on('htmx:timeout', function (evt) {
-  console.error('HTMX ON', evt);
-  Notiflix.Notify.failure('Request timed out. Please refresh the page.');
-});
-
-document.body.addEventListener('htmx:timeout', function (evt) {
-  console.error('Document body:', evt);
-  Notiflix.Notify.failure('Request timed out. Please refresh the page.');
-});

@@ -133,7 +133,7 @@ func (api *API) attachRoutes(router *mux.Router) error {
 func (api *API) attachMiddleware(router *mux.Router) {
 	// Handle cancelled requests
 	router.Use(func(next http.Handler) http.Handler {
-		return http.TimeoutHandler(next, 30*time.Second, "Request timed out")
+		return http.TimeoutHandler(next, 30*time.Second, "Request timed out/was cancelled")
 	})
 }
 

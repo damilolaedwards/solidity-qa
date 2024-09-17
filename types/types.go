@@ -23,7 +23,7 @@ type SlitherContract struct {
 	Name               string            `json:"name"`
 	Code               string            `json:"code"`
 	IsAbstract         bool              `json:"is_abstract"`
-	IsInterface        bool              `json:"in_interface"`
+	IsInterface        bool              `json:"is_interface"`
 	IsLibrary          bool              `json:"is_library"`
 	Functions          []Function        `json:"functions"`
 	InheritedContracts []SlitherContract `json:"inherited_contracts"`

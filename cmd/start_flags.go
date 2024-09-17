@@ -18,6 +18,7 @@ func addStartFlags() error {
 	startCmd.Flags().String("address", "", "address of contract to be analyzed")
 	startCmd.Flags().String("network-prefix", "", "network prefix of contract to be analyzed")
 	startCmd.Flags().String("api-key", "", "network API key")
+	startCmd.Flags().Bool("exclude-interfaces", false, "used to specify that interfaces should be excluded from the analysis")
 
 	return nil
 }
@@ -51,6 +52,11 @@ func updateProjectConfigWithStartFlags(cmd *cobra.Command, projectConfig *config
 		}
 
 		projectConfig.OnChainConfig.ApiKey, err = cmd.Flags().GetString("api-key")
+		if err != nil {
+			return err
+		}
+
+		projectConfig.OnChainConfig.ExcludeInterfaces, err = cmd.Flags().GetBool("exclude-interfaces")
 		if err != nil {
 			return err
 		}

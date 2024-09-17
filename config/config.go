@@ -29,6 +29,9 @@ type OnChainConfig struct {
 
 	// NetworkPrefix describes the network prefix of the onchain contract
 	NetworkPrefix string `json:"-"`
+
+	// ExcludeInterfaces describes whether interfaces will be excluded from the slither output
+	ExcludeInterfaces bool `json:"-"`
 }
 
 type ProjectConfig struct {
@@ -134,8 +137,8 @@ func customMarshal(v interface{}) ([]byte, error) {
 // WriteToFile writes the ProjectConfig to a provided file path in a JSON-serialized format with comments.
 // Returns an error if one occurs.
 func (p *ProjectConfig) WriteToFile(path string) error {
-	// Serialize the configuration with comments
-	b, err := customMarshal(p)
+	// Serialize the configuration
+	b, err := json.MarshalIndent(p, "", "\t")
 	if err != nil {
 		return err
 	}
