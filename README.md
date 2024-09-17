@@ -17,6 +17,7 @@ Before downloading crytic-assistant, you will need to have `crytic-compile` and 
 - Installation instructions for `slither` can be found [here](https://github.com/crytic/slither).
 
 `crytic-compile` and `slither` require a Python environment. Installation instructions for Python can be found [here](https://www.python.org/downloads/).
+- Note: Python version must be `3.10` or greater
 
 ## Installation
 
