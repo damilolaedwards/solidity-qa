@@ -1,10 +1,10 @@
-# Audit Assistant
+# Crytic Assistant
 
-**Audit Assistant** is a lightweight conversational AI code review tool designed to streamline the process of conducting and managing security audits. It helps security professionals interact with a codebase and identify vulnerabilities as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
+**Crytic Assistant** is a lightweight conversational AI code review tool designed to streamline the process of conducting and managing security audits. It helps security professionals interact with a codebase and identify vulnerabilities as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
 
 ## Features
 
-- **Web based UI:** Intuitive chat UI for seamless conversational flows with the codebase.
+- **Web based interface:** Intuitive chat user interface with color coded elements to enhance readability.
 - **Context Switch:** Seamlessly switch context between chatGPT and Claude within the same conversation flow.
 - **Report Generation:** Generate issue report based of predefined template.
 - **On-Chain Support:** Supports auditing on-chain contracts via Etherscan.
