@@ -1,17 +1,17 @@
 # Audit Assistant
 
-**Audit Assistant** is a powerful, lightweight command-line tool designed to streamline the process of conducting and managing security audits. It helps security professionals and developers identify vulnerabilities, manage audit findings, and generate comprehensive audit reports. With customizable templates and the ability to initialize new audit projects, this tool is ideal for conducting thorough audits on both local and on-chain contracts.
+**Audit Assistant** is a lightweight conversational AI code review tool designed to streamline the process of conducting and managing security audits. It helps security professionals interact with a codebase and identify vulnerabilities as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
 
 ## Features
 
-- **Project Initialization:** Quickly generate and set up audit project configurations with customizable parameters.
-- **Audit Report Generation:** Automatically generate reports based on parsed contract data for different audit types.
-- **Manage Findings:** Track vulnerabilities and manage audit recommendations.
+- **Web based UI:** Intuitive chat UI for seamless conversational flows with the codebase.
+- **Context Switch:** Seamlessly switch context between chatGPT and Claude within the same conversation flow.
+- **Audit Report Generation:** Generate issue report based of predefined template.
 - **On-Chain Support:** Supports auditing on-chain contracts via Etherscan.
 
 ## Prerequisites
 
-Before downloading medusa, you will need to have `crytic-compile` and `slither` installed.
+Before downloading crytic-assistant, you will need to have `crytic-compile` and `slither` installed.
 
 - Installation instructions for `crytic-compile` can be found [here](https://github.com/crytic/crytic-compile).
 - Installation instructions for `slither` can be found [here](https://github.com/crytic/slither).
@@ -23,26 +23,26 @@ Before downloading medusa, you will need to have `crytic-compile` and `slither` 
 1. Clone the repository from the source:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/crytic/crytic-assistant
    ```
 
 2. Navigate into the project directory:
 
    ```bash
-   cd assistant
+   cd crytic-assistant
    ```
 
 3. Build the binary:
 
    ```bash
-   go build -o assistant
+   go build -o crytic-assistant
    ```
 
 4. Add the binary to your system's PATH to access it globally:
 
    - On Linux or macOS, add the following line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
      ```bash
-     export PATH=$PATH:/path/to/assistant
+     export PATH=$PATH:/path/to/crytic-assistant
      ```
    - On Windows, add the binary directory to your system's environment variables.
 
@@ -67,7 +67,7 @@ The `init` command generates a configuration file for a new audit project. You c
 #### Basic Usage
 
 ```bash
-assistant init
+crytic-assistant init
 ```
 
 This will generate a configuration file called `assistant.json` in the current directory.
@@ -75,7 +75,7 @@ This will generate a configuration file called `assistant.json` in the current d
 #### With Options
 
 ```bash
-assistant init --out="config.json" --name="my-audit" --port="9000" --target-contracts-dir="./contracts" --test-contracts-dir="./tests"
+crytic-assistant init --out="config.json" --name="my-audit" --port="9000" --target-contracts-dir="./contracts" --test-contracts-dir="./tests"
 ```
 
 This will generate a `config.json` file with custom project details.
@@ -95,22 +95,22 @@ Once the project has been initialized and the configuration file is populated, y
 #### Basic Usage
 
 ```bash
-assistant start
+crytic-assistant start
 ```
 
 #### With Target Contracts Directory
 
 ```bash
-assistant start ./path/to/contracts
+crytic-assistant start ./path/to/contracts
 ```
 
 #### With Options
 
 ```bash
-assistant start --config="config.json" --onchain --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
+crytic-assistant start --config="config.json" --onchain --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
 ```
 
-This will use the specified configuration file and spin up the audit process, fetching contract details from Etherscan if the `onchain` flag is set.
+This will use the specified configuration file and spin up the session, fetching contract source code from Etherscan if the `onchain` flag is set.
 
 **Flags:**
 
@@ -146,4 +146,4 @@ A sample `assistant.json` config file looks like this:
 
 ## License
 
-Audit Assistant is released under the MIT License.
+Crytic Assistant is released under the MIT License.
