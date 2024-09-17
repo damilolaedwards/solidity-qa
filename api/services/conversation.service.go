@@ -153,8 +153,7 @@ func GetReportTypes() []string {
 	return reportTypes
 }
 
-// filterMessages ensures that the user and assistant messages are in pairs,
-// and non-user messages are always included.
+// filterMessages ensures that the user and assistant messages are in pairs
 func (ch *ConversationService) filterMessages(messages []types.Message) []types.Message {
 	var filteredMessages []types.Message
 
@@ -170,8 +169,10 @@ func (ch *ConversationService) filterMessages(messages []types.Message) []types.
 			}
 			// If user message is not last and not followed by assistant, it's filtered out
 		} else {
-			// Non-user messages are always included
-			filteredMessages = append(filteredMessages, messages[i])
+			// If assistant message is not preceded by user, it's filtered out
+			if i > 0 && messages[i-1].Role == "user" {
+				filteredMessages = append(filteredMessages, messages[i])
+			}
 		}
 	}
 

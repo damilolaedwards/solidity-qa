@@ -84,7 +84,7 @@ templ ChatInterface(conversation []types.Message, suggestions []Suggestion, erro
 
               if (markdownContent) {
                 const htmlContent = await renderMarkdown(markdownContent);
-                md.innerHTML = decodeURIComponent(htmlContent);
+                md.innerHTML = htmlContent;
               }
             });
 
