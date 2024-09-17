@@ -30,6 +30,23 @@ func InitialPrompts(targetContracts string) []types.Message {
 	}}
 }
 
+// AskAboutFunctionPrompt creates a prompt string for asking about a specific function in a contract.
+// The prompt instructs the LLM to provide a detailed explanation of the given function.
+//
+// Parameters:
+//   - functionName: A string containing the name of the function to be explained.
+//   - contractName: A string containing the name of the contract where the function is located.
+//
+// Returns:
+//   - A string containing the complete prompt for asking about the function.
+func AskAboutFunctionPrompt(functionName string, contractName string) string {
+	var prompt strings.Builder
+
+	prompt.WriteString(fmt.Sprintf("Give me a detailed explanation of function **%s** in contract **%s**", functionName, contractName))
+
+	return prompt.String()
+}
+
 // GenerateReportPrompt creates a prompt string for generating an audit report.
 // The prompt instructs the LLM to create a report focused on specific types of bugs
 // and provides a sample format for the report.

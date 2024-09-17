@@ -1,11 +1,12 @@
 package components
 
 import "assistant/types"
+import "assistant/llm"
 import "strconv"
 import "fmt"
 
 templ renderFunctionButton(color string, functionName string, contractName string) {
-  <button class={"func block p-1 pl-4", color} onclick="askLLMAboutFunction(event)" data-action={fmt.Sprintf("Give me a detailed explanation of function **%s** in contract **%s**", functionName, contractName)}>
+  <button class={"func block p-1 pl-4", color} onclick="askLLMAboutFunction(event)" data-action={llm.AskAboutFunctionPrompt(functionName, contractName)}>
     {functionName}
   </button>
 }
