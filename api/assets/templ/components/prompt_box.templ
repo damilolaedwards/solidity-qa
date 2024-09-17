@@ -1,7 +1,7 @@
 package components
 
 templ PromptBox() {
-  <form id="promptForm" class="flex items-center gap-3 group" id="promptForm" hx-post="/prompt" hx-trigger="submit" hx-target="main" hx-swap="outerHTML show:#messageList:bottom" hx-disabled-elt="find input[type='text']">
+  <form id="promptForm" class="flex items-center gap-3 group" id="promptForm" hx-post="/prompt" hx-trigger="submit" hx-target="main" hx-swap="outerHTML scroll:#messageList:bottom" hx-disabled-elt="find input[type='text']">
     <div class="relative w-full">    
       <input
         id="messageBox"

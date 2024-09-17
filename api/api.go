@@ -6,9 +6,6 @@ import (
 	"assistant/types"
 	"embed"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
 	"io"
 	"log"
 	"net"
@@ -18,6 +15,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
 )
 
 //go:embed assets/public
@@ -133,7 +134,7 @@ func (api *API) attachRoutes(router *mux.Router) error {
 func (api *API) attachMiddleware(router *mux.Router) {
 	// Handle cancelled requests
 	router.Use(func(next http.Handler) http.Handler {
-		return http.TimeoutHandler(next, 30*time.Second, "Request timed out/was cancelled")
+		return http.TimeoutHandler(next, 300*time.Second, "Request timed out/was cancelled")
 	})
 }
 

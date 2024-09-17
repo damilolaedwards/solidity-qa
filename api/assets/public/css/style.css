@@ -34,7 +34,6 @@ details[open] > summary > div > svg {
 
 /* Message bubble styling */
 .message {
-  max-width: 30rem;
   display: flex;
   flex-direction: column;
   width: fit-content;
@@ -46,6 +45,7 @@ details[open] > summary > div > svg {
 }
 
 .message.user {
+  max-width: 75%;
   background-color: #1d4ed8;
   color: #ffffff;
   align-self: flex-end;
@@ -53,6 +53,7 @@ details[open] > summary > div > svg {
 }
 
 .message.assistant {
+  max-width: 100%;
   background-color: #2d3748;
   color: #e5e7eb;
   align-self: flex-start;
