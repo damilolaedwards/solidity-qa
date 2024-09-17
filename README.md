@@ -6,7 +6,7 @@
 
 - **Web based UI:** Intuitive chat UI for seamless conversational flows with the codebase.
 - **Context Switch:** Seamlessly switch context between chatGPT and Claude within the same conversation flow.
-- **Audit Report Generation:** Generate issue report based of predefined template.
+- **Report Generation:** Generate issue report based of predefined template.
 - **On-Chain Support:** Supports auditing on-chain contracts via Etherscan.
 
 ## Prerequisites
