@@ -144,7 +144,8 @@ A sample `assistant.json` config file looks like this:
   "port": 8080, // The port that the API will be running on
   "includeInterfaces": false, // Whether interfaces will be included in the slither output
   "includeAbstract": false, // Whether abstract contracts will be included in the slither output
-  "includeLibraries": false // Whether libraries will be included in the slither output
+  "includeLibraries": false, // Whether libraries will be included in the slither output,
+  "slitherArgs": {} // Extra arguments to be passed to slither
 }
 ```
 

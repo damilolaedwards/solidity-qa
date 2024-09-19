@@ -221,8 +221,7 @@ if __name__ == "__main__":
         slither = SlitherHelper.get_slither_from_address(
             address=target, network_prefix=args.network_prefix if args.network_prefix != "" else "mainet", api_key=args.api_key, args=kwargs)
     else:
-        slither = Slither(
-            target=target, kwargs=kwargs)
+        slither = Slither(target, **kwargs)
 
     contracts_data = SlitherHelper.get_contracts(slither=slither)
 
