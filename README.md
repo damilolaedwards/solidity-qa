@@ -109,7 +109,7 @@ crytic-assistant start ./path/to/contracts
 #### With Options
 
 ```bash
-crytic-assistant start --config="config.json" --slither-args='{ "checklist": true }' --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
+crytic-assistant start --config="config.json" --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
 ```
 
 This will use the specified configuration file and spin up the session, fetching contract source code from Etherscan if the `onchain` flag is set.
@@ -148,6 +148,28 @@ A sample `assistant.json` config file looks like this:
   "slitherArgs": {} // Extra arguments to be passed to slither
 }
 ```
+
+#### Passing extra slither args
+
+In cases where you need to pass extra arguments to slither, the `slitherArgs` config option can be used to provide the extra arguments. Examples:
+
+- As command-line argument:
+
+  ```bash
+  crytic-assistant start --slither-args='{ "compile_force_framework": "hardhat" }'
+  ```
+
+- In config:
+
+  ```json
+  {
+    ... // Other config parameters
+    "slitherArgs": {
+      "compile_force_framework": "hardhat",
+      ...
+    }
+  }
+  ```
 
 ## License
 
