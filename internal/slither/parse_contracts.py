@@ -13,8 +13,12 @@ from slither.core.declarations import Function, Contract
 
 class SlitherHelper:
     @staticmethod
-    def _parse_exclude_paths(exclude_paths):
-        return exclude_paths.split(',')
+    def _parse_array(arrString: str):
+        return arrString.split(',')
+
+    @staticmethod
+    def _parse_dict(dictString: str):
+        return json.loads(dictString)
 
     @staticmethod
     def _filter_contracts(contracts: List[Contract], target: str, exclude_paths: List[str]):
@@ -131,7 +135,7 @@ class SlitherHelper:
         return out_dict
 
     @staticmethod
-    def get_slither_from_address(address: str, network_prefix: str, api_key: str) -> Slither:
+    def get_slither_from_address(address: str, network_prefix: str, api_key: str, args: List[str]) -> Slither:
         # Validate network prefix
         if not SlitherHelper.is_supported_network_prefix(network_prefix):
             raise ValueError(f"Unsupported network prefix: {network_prefix}")
@@ -142,6 +146,11 @@ class SlitherHelper:
 
         args = SlitherHelper.generate_api_key_dict(
             network_prefix, api_key)
+
+        # Add extra slither args
+        if args is not None:
+            args.extend(args)
+
         s = Slither(
             f"{network_prefix}:{address}", **args)
         return s
@@ -176,25 +185,28 @@ if __name__ == "__main__":
                         help='The target directory')
     parser.add_argument('--out', type=str, required=True,
                         help='The file the slither output will be written to')
+    parser.add_argument(
+        '--slither-args', type=SlitherHelper._parse_dict, required=False, default={}, help='Extra arguments to be passed to slither')
     parser.add_argument('--onchain', action='store_true',
                         help='Whether the target is an onchain contract')
     parser.add_argument('--network-prefix', type=str, required=False,
                         help='The network prefix of the onchain contract')
     parser.add_argument('--api-key', type=str, required=False,
                         help='The API key to use for the onchain contract')
-    parser.add_argument("--contracts-dir", type=str, required=False,
+    parser.add_argument('--contracts-dir', type=str, required=False,
                         help='The directory containing your target contracts')
-    parser.add_argument("--exclude-contract-paths", type=SlitherHelper._parse_exclude_paths, required=False, default=[
+    parser.add_argument('--exclude-contract-paths', type=SlitherHelper._parse_array, required=False, default=[
     ], help='Paths to be excluded from the target contracts')
-    parser.add_argument("--tests-dir", type=str, required=False,
+    parser.add_argument('--tests-dir', type=str, required=False,
                         help='The directory containing your target contract tests')
-    parser.add_argument("--exclude-test-paths", type=SlitherHelper._parse_exclude_paths,
+    parser.add_argument('--exclude-test-paths', type=SlitherHelper._parse_array,
                         required=False, default=[], help='Paths to be excluded from the tests')
 
     args = parser.parse_args()
 
     target = args.target
     output_file = args.out
+    kwargs = args.slither_args
 
     # Validate args
     if not args.onchain and not os.path.exists(target):
@@ -207,9 +219,10 @@ if __name__ == "__main__":
     slither = None
     if args.onchain:
         slither = SlitherHelper.get_slither_from_address(
-            address=target, network_prefix=args.network_prefix if args.network_prefix != "" else "mainet", api_key=args.api_key)
+            address=target, network_prefix=args.network_prefix if args.network_prefix != "" else "mainet", api_key=args.api_key, args=kwargs)
     else:
-        slither = Slither(target=target)
+        slither = Slither(
+            target=target, kwargs=kwargs)
 
     contracts_data = SlitherHelper.get_contracts(slither=slither)
 

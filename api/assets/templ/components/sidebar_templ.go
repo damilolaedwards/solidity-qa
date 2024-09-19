@@ -154,7 +154,7 @@ func renderContract(contract types.Contract) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 = []any{templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-green-300", contract.IsLibrary)}
+		var templ_7745c5c3_Var8 = []any{templ.KV("text-blue-300", contract.IsAbstract), templ.KV("text-pink-400", contract.IsInterface), templ.KV("text-green-300", contract.IsLibrary)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var8...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

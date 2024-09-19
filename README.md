@@ -17,6 +17,7 @@ Before downloading crytic-assistant, you will need to have `crytic-compile` and 
 - Installation instructions for `slither` can be found [here](https://github.com/crytic/slither).
 
 `crytic-compile` and `slither` require a Python environment. Installation instructions for Python can be found [here](https://www.python.org/downloads/).
+
 - Note: Python version must be `3.10` or greater
 
 ## Installation
@@ -108,7 +109,7 @@ crytic-assistant start ./path/to/contracts
 #### With Options
 
 ```bash
-crytic-assistant start --config="config.json" --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
+crytic-assistant start --config="config.json" --slither-args='{ "checklist": true }' --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
 ```
 
 This will use the specified configuration file and spin up the session, fetching contract source code from Etherscan if the `onchain` flag is set.
@@ -116,6 +117,7 @@ This will use the specified configuration file and spin up the session, fetching
 **Flags:**
 
 - `--config`: Path to the configuration file.
+- `--slither-args`: Extra arguments to be passed to slither.
 - `--onchain`: Specifies if the contract is an on-chain contract rather than a local project.
 - `--address`: Address of the on-chain contract to be analyzed.
 - `--network`: Network of the on-chain contract to be analyzed.

@@ -3,6 +3,7 @@ package slither
 import (
 	"assistant/config"
 	"assistant/types"
+	"assistant/utils"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 //go:embed parse_contracts.py
 var parseContractsScript string
 
-func runSlitherOnLocal(targetDir string, targetExcludePaths []string, testDir string, testExcludePaths []string, outputFile *os.File) error {
+func runSlitherOnLocal(targetDir string, targetExcludePaths []string, testDir string, testExcludePaths []string, slitherArgs map[string]any, outputFile *os.File) error {
 	// Run the command
 	// Create a temporary file to hold the Python script
 	tmpfile, err := os.CreateTemp("", "script-*.py")
@@ -42,6 +43,10 @@ func runSlitherOnLocal(targetDir string, targetExcludePaths []string, testDir st
 
 	args := []string{"--target", ".", "--out", outputFile.Name(),
 		"--contracts-dir", targetDir}
+
+	if len(slitherArgs) > 0 {
+		args = append(args, "--slither-args", utils.MapToDictString(slitherArgs))
+	}
 
 	if len(targetExcludePaths) > 0 {
 		args = append(args, "--exclude-contract-paths",
@@ -71,7 +76,7 @@ func runSlitherOnLocal(targetDir string, targetExcludePaths []string, testDir st
 	return nil
 }
 
-func runSlitherOnchain(address string, networkPrefix string, apiKey string, outputFile *os.File) error {
+func runSlitherOnchain(address string, networkPrefix string, apiKey string, slitherArgs map[string]any, outputFile *os.File) error {
 	// Run the command
 	// Create a temporary file to hold the Python script
 	tmpfile, err := os.CreateTemp("", "script-*.py")
@@ -98,6 +103,10 @@ func runSlitherOnchain(address string, networkPrefix string, apiKey string, outp
 
 	args := []string{"--target", address, "--out", outputFile.Name(), "--onchain",
 		"--network-prefix", networkPrefix, "--api-key", apiKey}
+
+	if len(slitherArgs) > 0 {
+		args = append(args, "--slither-args", utils.MapToDictString(slitherArgs))
+	}
 
 	// Prepare the command
 	cmd := exec.Command("python3", append([]string{tmpfile.Name()}, args...)...)
@@ -131,7 +140,7 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 	}(tmpfile.Name()) // Clean up
 
 	if projectConfig.OnChainConfig.Enabled {
-		err = runSlitherOnchain(projectConfig.OnChainConfig.Address, projectConfig.OnChainConfig.NetworkPrefix, projectConfig.OnChainConfig.ApiKey, tmpfile)
+		err = runSlitherOnchain(projectConfig.OnChainConfig.Address, projectConfig.OnChainConfig.NetworkPrefix, projectConfig.OnChainConfig.ApiKey, projectConfig.SlitherArgs, tmpfile)
 		if err != nil {
 			return nil, "", err
 		}
@@ -142,7 +151,7 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 			return nil, "", fmt.Errorf("unable to read directory")
 		}
 
-		err = runSlitherOnLocal(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths, projectConfig.TestContracts.Dir, projectConfig.TestContracts.ExcludePaths, tmpfile)
+		err = runSlitherOnLocal(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths, projectConfig.TestContracts.Dir, projectConfig.TestContracts.ExcludePaths, projectConfig.SlitherArgs, tmpfile)
 		if err != nil {
 			return nil, "", err
 		}

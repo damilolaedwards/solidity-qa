@@ -25,6 +25,7 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 		IncludeAbstract:   false,
 		IncludeInterfaces: false,
 		IncludeLibraries:  false,
+		SlitherArgs:       map[string]any{},
 	}
 
 	// Return the project configuration

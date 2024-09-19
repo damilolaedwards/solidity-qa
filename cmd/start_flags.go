@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"assistant/config"
+	"encoding/json"
 
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,9 @@ func addStartFlags() error {
 	// Flags
 	startCmd.Flags().String("config", "", "path to config file")
 	startCmd.Flags().String("name", "", "project name")
+	startCmd.Flags().String("slither-args", "{}", "arguments to be passed to slither")
+
+	// Onchain config flags
 	startCmd.Flags().Bool("onchain", false, "used to specify that an onchain contract will be used rather than a local project")
 	startCmd.Flags().String("address", "", "address of contract to be analyzed")
 	startCmd.Flags().String("network-prefix", "", "network prefix of contract to be analyzed")
@@ -29,6 +33,19 @@ func updateProjectConfigWithStartFlags(cmd *cobra.Command, projectConfig *config
 
 	if cmd.Flags().Changed("name") {
 		projectConfig.Name, err = cmd.Flags().GetString("name")
+		if err != nil {
+			return err
+		}
+	}
+
+	if cmd.Flags().Changed("slither-args") {
+		slitherArgs, err := cmd.Flags().GetString("slither-args")
+		if err != nil {
+			return err
+		}
+
+		// Convert map string to map
+		err = json.Unmarshal([]byte(slitherArgs), &projectConfig.SlitherArgs)
 		if err != nil {
 			return err
 		}
