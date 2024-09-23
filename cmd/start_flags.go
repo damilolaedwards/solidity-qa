@@ -12,9 +12,10 @@ func addStartFlags() error {
 	// Prevent alphabetical sorting of usage message
 	startCmd.Flags().SortFlags = false
 
-	// Flags
 	startCmd.Flags().String("config", "", "path to config file")
 	startCmd.Flags().String("name", "", "project name")
+	startCmd.Flags().Int("port", 8080, "the port the server should run on")
+	startCmd.Flags().Bool("host", false, "whether the local server should be hosted using ngrok")
 	startCmd.Flags().String("slither-args", "{}", "arguments to be passed to slither")
 
 	// Onchain config flags
@@ -33,6 +34,20 @@ func updateProjectConfigWithStartFlags(cmd *cobra.Command, projectConfig *config
 
 	if cmd.Flags().Changed("name") {
 		projectConfig.Name, err = cmd.Flags().GetString("name")
+		if err != nil {
+			return err
+		}
+	}
+
+	if cmd.Flags().Changed("port") {
+		projectConfig.Port, err = cmd.Flags().GetInt("port")
+		if err != nil {
+			return err
+		}
+	}
+
+	if cmd.Flags().Changed("host") {
+		projectConfig.Host, err = cmd.Flags().GetBool("host")
 		if err != nil {
 			return err
 		}

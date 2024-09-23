@@ -117,6 +117,8 @@ This will use the specified configuration file and spin up the session, fetching
 **Flags:**
 
 - `--config`: Path to the configuration file.
+- `--port`: The port the local server will be served on.
+- `--host`: Whether the local server will be hosted using ngrok (requires the NGROK_AUTHTOKEN env variable be set).
 - `--slither-args`: Extra arguments to be passed to slither.
 - `--onchain`: Specifies if the contract is an on-chain contract rather than a local project.
 - `--address`: Address of the on-chain contract to be analyzed.
@@ -142,6 +144,7 @@ A sample `assistant.json` config file looks like this:
     "excludePaths": [] // Paths that should be excluded when parsing the directory
   }, // The directory that holds the test contracts
   "port": 8080, // The port that the API will be running on
+  "host": false, // Whether the local server should be hosted using ngrok
   "includeInterfaces": false, // Whether interfaces will be included in the slither output
   "includeAbstract": false, // Whether abstract contracts will be included in the slither output
   "includeLibraries": false, // Whether libraries will be included in the slither output,

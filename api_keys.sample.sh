@@ -10,3 +10,5 @@
 #export POLYGONSCAN_API_KEY=""
 #export SNOWTRACE_API_KEY=""
 #export FTMSCAN_API_KEY=""
+
+#export NGROK_AUTHTOKEN=""
