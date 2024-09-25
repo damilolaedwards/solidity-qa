@@ -25,10 +25,10 @@ import (
 var staticAssets embed.FS
 
 type API struct {
-	targetContracts string
-	contracts       []types.Contract
-	logger          *logging.Logger
-	projectName     string
+	contractCodes string
+	contracts     []types.Contract
+	logger        *logging.Logger
+	projectName   string
 }
 
 func InitializeAPI(contractCodes string, contracts []types.Contract) *API {
@@ -37,9 +37,9 @@ func InitializeAPI(contractCodes string, contracts []types.Contract) *API {
 	logger.AddWriter(os.Stdout, logging.UNSTRUCTURED, true)
 
 	return &API{
-		targetContracts: contractCodes,
-		contracts:       contracts,
-		logger:          logger,
+		contractCodes: contractCodes,
+		contracts:     contracts,
+		logger:        logger,
 	}
 }
 
@@ -128,7 +128,7 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 }
 
 func (api *API) attachRoutes(router *mux.Router) error {
-	return attachFrontendRoutes(router, api.contracts, api.targetContracts, api.projectName)
+	return attachFrontendRoutes(router, api.contracts, api.contractCodes, api.projectName)
 }
 
 func (api *API) attachMiddleware(router *mux.Router) {
