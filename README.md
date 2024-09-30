@@ -118,7 +118,7 @@ This will use the specified configuration file and spin up the session, fetching
 
 - `--config`: Path to the configuration file.
 - `--port`: The port the local server will be served on.
-- `--host`: Whether the local server will be hosted using ngrok (requires the NGROK_AUTHTOKEN env variable be set).
+- `--host`: Whether the local server will be hosted using ngrok (requires the NGROK_AUTHTOKEN env variable).
 - `--slither-args`: Extra arguments to be passed to slither.
 - `--onchain`: Specifies if the contract is an on-chain contract rather than a local project.
 - `--address`: Address of the on-chain contract to be analyzed.

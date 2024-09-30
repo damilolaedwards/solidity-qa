@@ -120,7 +120,7 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	if remoteUrl != "" {
 		logger.Info("Remote: ", remoteUrl)
 	} else {
-		logger.Info("Remote: Use ", colors.Green, "--host", colors.White, " or the ", colors.Green, "host", colors.White, " config option to host the server (requires the NGROK_AUTHTOKEN env variable be set)")
+		logger.Info("Remote: Use ", colors.Green, "--host", colors.White, " or the ", colors.Green, "host", colors.White, " config option to host the server (requires the NGROK_AUTHTOKEN env variable)")
 	}
 
 	// Create a channel to receive interrupt signals
