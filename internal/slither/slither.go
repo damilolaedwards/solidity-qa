@@ -212,8 +212,8 @@ func filterSlitherOutput(slitherContracts []types.SlitherContract, includeInterf
 			Functions:          slitherContract.Functions,
 			InheritedContracts: filterSlitherOutput(slitherContract.InheritedContracts, includeInterfaces, includeAbstract, includeLibraries),
 			IsAbstract:         slitherContract.IsAbstract,
-			IsInterface:        slitherContract.IsAbstract,
-			IsLibrary:          slitherContract.IsAbstract,
+			IsInterface:        slitherContract.IsInterface,
+			IsLibrary:          slitherContract.IsLibrary,
 		})
 	}
 

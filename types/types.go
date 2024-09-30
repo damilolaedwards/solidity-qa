@@ -37,7 +37,7 @@ type Contract struct {
 	ID                 int        `json:"id"`
 	Name               string     `json:"name"`
 	IsAbstract         bool       `json:"is_abstract"`
-	IsInterface        bool       `json:"in_interface"`
+	IsInterface        bool       `json:"is_interface"`
 	IsLibrary          bool       `json:"is_library"`
 	Functions          []Function `json:"functions"`
 	InheritedContracts []Contract `json:"inherited_contracts"`
