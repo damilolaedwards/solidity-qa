@@ -5,6 +5,7 @@ import (
 	"assistant/config"
 	"assistant/internal/slither"
 	"assistant/logging/colors"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -37,7 +38,7 @@ func init() {
 func cmdValidateStartArgs(cmd *cobra.Command, args []string) error {
 	// Make sure we have no positional args
 	if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
-		err = fmt.Errorf("start can only accept one positional argument, target contracts directory")
+		err = errors.New("start can only accept one positional argument, target contracts directory")
 		cmdLogger.Error("Failed to validate args to the start command", err)
 		return err
 	}
