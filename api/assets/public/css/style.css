@@ -18,10 +18,12 @@
   border-radius: 0.5rem;
 }
 
+/* Accordion styles */
 details[open] > summary > div > svg {
   rotate: 180deg;
 }
 
+/* Chat container styles */
 .chat-container {
   display: flex;
   flex-direction: column;

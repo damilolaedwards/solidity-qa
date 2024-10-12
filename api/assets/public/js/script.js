@@ -1,36 +1,41 @@
-Notiflix.Loading.hourglass();
+Notiflix.Loading.dots();
 
 document.addEventListener('DOMContentLoaded', () => Notiflix.Loading.remove());
 
-function askLLMAboutFunction(e) {
+// Handle htmx error responses
+document.querySelector('main').addEventListener('htmx:responseError', (evt) => {
+  console.error(evt);
+  Notiflix.Notify.failure(
+    'An error occurred. Please check your logs for the error message.'
+  );
+});
+
+// Handle prompt form loading states
+document
+  .getElementById('promptForm')
+  .addEventListener('htmx:beforeRequest', (_evt) =>
+    Notiflix.Loading.hourglass()
+  );
+document
+  .getElementById('promptForm')
+  .addEventListener('htmx:afterRequest', (_evt) => Notiflix.Loading.remove());
+
+const askLLMAboutFunction = (e) => {
   const messageBox = document.getElementById('messageBox');
   if (!messageBox) return;
 
   messageBox.value = e.currentTarget.getAttribute('data-action');
   triggerFormSubmit();
-}
+};
 
-function askLLMAboutSuggestion(e) {
+const askLLMAboutSuggestion = (e) => {
   const messageBox = document.getElementById('messageBox');
   if (!messageBox) return;
 
   messageBox.value = e.currentTarget.querySelector('p').innerText;
-}
+};
 
-const submitBtn = document.getElementById('submitBtn');
-const promptForm = document.getElementById('promptForm');
-
-function triggerFormSubmit() {
-  const form = document.getElementById('promptForm');
-  const event = new Event('submit', {
-    bubbles: true,
-    cancelable: true,
-  });
-
-  form.dispatchEvent(event);
-}
-
-function copyToClipboard(e) {
+const copyToClipboard = (e) => {
   const messageId = e.getAttribute('data-message-id');
 
   const content = document
@@ -45,17 +50,4 @@ function copyToClipboard(e) {
       console.error('Could not copy text: ', err);
     }
   );
-}
-
-const cancelFormRequest = () => {
-  htmx.trigger('#promptForm', 'htmx:abort');
 };
-
-document
-  .querySelector('main')
-  .addEventListener('htmx:responseError', function (evt) {
-    console.error(evt);
-    Notiflix.Notify.failure(
-      'An error occurred. Please check your logs for the error message.'
-    );
-  });
