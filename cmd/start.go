@@ -120,7 +120,11 @@ func cmdRunStart(cmd *cobra.Command, args []string) error {
 	if projectConfig.OnChainConfig.Enabled {
 		cmdLogger.Info("Running Slither on contract at address: ", colors.Green, projectConfig.OnChainConfig.Address, colors.Reset)
 	} else {
-		cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, "\n")
+		if len(projectConfig.ContractWhitelist) > 0 {
+			cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, ", Selecting contracts: ", colors.Green, projectConfig.ContractWhitelist, colors.Reset, "\n")
+		} else {
+			cmdLogger.Info("Running Slither on the target contracts directory: ", colors.Green, projectConfig.TargetContracts.Dir, colors.Reset, ", Excluding paths: ", colors.Red, projectConfig.TargetContracts.ExcludePaths, colors.Reset, "\n")
+		}
 	}
 
 	// Parse contracts

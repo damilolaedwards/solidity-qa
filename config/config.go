@@ -35,6 +35,9 @@ type ProjectConfig struct {
 	// Name describes the project name.
 	Name string `json:"name" description:"The project name"`
 
+	// ContractWhitelist describes the only contracts that should be included
+	ContractWhitelist []string `json:"contractWhitelist"`
+
 	// TargetContracts describes the directory that holds the contracts to be fuzzed.
 	TargetContracts DirectoryConfig `json:"targetContracts"`
 
