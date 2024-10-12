@@ -90,9 +90,6 @@ This will generate a `config.json` file with custom project details.
 - `--target`: Directory containing the contracts to be audited.
 - `--test-dir`: Directory containing the test contracts.
 
-### 2. Start the Audit
-
-Once the project has been initialized and the configuration file is populated, you can start the audit process.
 
 #### Basic Usage
 
