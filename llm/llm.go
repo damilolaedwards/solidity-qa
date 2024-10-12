@@ -3,11 +3,13 @@ package llm
 import (
 	"assistant/api/client"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"os"
+
+	"golang.org/x/net/context"
 )
 
 type Model struct {
@@ -76,7 +78,7 @@ func AskModel(messages []ApiMessage, model string, ctx context.Context) (string,
 				return "", err
 			}
 			if numTokens > m.MaxTokenLen {
-				return "", fmt.Errorf(TokenLimitExceeded)
+				return "", errors.New(TokenLimitExceeded)
 			}
 
 			var requestBody any
@@ -156,7 +158,7 @@ func handleImageResponse(body []byte) (string, error) {
 	if errorResponse.Error.Message != "" {
 		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
 	}
-	return "", fmt.Errorf("no response from model")
+	return "", errors.New("no response from model")
 }
 
 func handleOpenAITextResponse(body []byte) (string, error) {
@@ -177,7 +179,7 @@ func handleOpenAITextResponse(body []byte) (string, error) {
 	if errorResponse.Error.Message != "" {
 		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
 	}
-	return "", fmt.Errorf("no response from model")
+	return "", errors.New("no response from model")
 }
 
 func handleClaudeTextResponse(body []byte) (string, error) {
@@ -197,7 +199,7 @@ func handleClaudeTextResponse(body []byte) (string, error) {
 	if errorResponse.Error.Message != "" {
 		return "", fmt.Errorf("error: %s", errorResponse.Error.Message)
 	}
-	return "", fmt.Errorf("no response from model")
+	return "", errors.New("no response from model")
 }
 
 func GetDefaultModel() Model {

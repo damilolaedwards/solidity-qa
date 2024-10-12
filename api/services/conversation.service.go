@@ -6,6 +6,7 @@ import (
 	"assistant/llm"
 	"assistant/types"
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -38,7 +39,7 @@ func NewConversationService(targetContracts string) (*ConversationService, error
 	}
 
 	if numTokens > llm.GetDefaultModel().MaxTokenLen {
-		return nil, fmt.Errorf("target contracts exceed maximum token length")
+		return nil, errors.New("target contracts exceed maximum token length")
 	}
 
 	return &ConversationService{
@@ -98,7 +99,7 @@ func (ch *ConversationService) PromptLLM(ctx context.Context, prompt string, mod
 func (ch *ConversationService) GenerateReport(ctx context.Context, data dto.GenerateReportDto, model string) ([]types.Message, error) {
 	sampleFileUrl, ok := ReportTypes[data.ReportType]
 	if !ok {
-		return nil, fmt.Errorf("invalid report type")
+		return nil, errors.New("invalid report type")
 	}
 
 	reportSample, err := client.FetchFileContent(sampleFileUrl, map[string]string{})

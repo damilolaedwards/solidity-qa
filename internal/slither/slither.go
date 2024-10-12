@@ -6,6 +6,7 @@ import (
 	"assistant/utils"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -175,7 +176,7 @@ func ParseContracts(projectConfig *config.ProjectConfig) ([]types.Contract, stri
 		// Check if provided directory is a directory
 		info, err := os.Stat(projectConfig.TargetContracts.Dir)
 		if err != nil || !info.IsDir() {
-			return nil, "", fmt.Errorf("unable to read directory")
+			return nil, "", errors.New("unable to read directory")
 		}
 
 		slitherOutput, err = runSlitherOnLocal(projectConfig.TargetContracts.Dir, projectConfig.TargetContracts.ExcludePaths, projectConfig.TestContracts.Dir, projectConfig.TestContracts.ExcludePaths, projectConfig.SlitherArgs)
