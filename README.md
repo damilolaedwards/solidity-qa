@@ -1,6 +1,6 @@
-# Crytic Assistant
+# Solidity-QA
 
-**Crytic Assistant** is a lightweight conversational AI code review tool designed to streamline the process of conducting and managing security audits. It leverages on the use AI to scan and identify code smells and vulnerabilities in codebases as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
+**Solidity-QA** is a lightweight conversational AI code review tool designed to streamline the process of conducting and managing security audits. It leverages on the use AI to scan and identify code smells and vulnerabilities in codebases as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
 
 ## Features
 
@@ -11,7 +11,7 @@
 
 ## Prerequisites
 
-Before downloading crytic-assistant, you will need to have `crytic-compile` and `slither` installed.
+Before downloading solidity-qa, you will need to have `crytic-compile` and `slither` installed.
 
 - Installation instructions for `crytic-compile` can be found [here](https://github.com/crytic/crytic-compile).
 - Installation instructions for `slither` can be found [here](https://github.com/crytic/slither).
@@ -25,26 +25,26 @@ Before downloading crytic-assistant, you will need to have `crytic-compile` and 
 1. Clone the repository from the source:
 
    ```bash
-   git clone https://github.com/crytic/crytic-assistant
+   git clone https://github.com/damilolaedwards/solidity-qa
    ```
 
 2. Navigate into the project directory:
 
    ```bash
-   cd crytic-assistant
+   cd solidity-qa
    ```
 
 3. Build the binary:
 
    ```bash
-   go build -o crytic-assistant
+   go build -o solidity-qa
    ```
 
 4. Add the binary to your system's PATH to access it globally:
 
    - On Linux or macOS, add the following line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
      ```bash
-     export PATH=$PATH:/path/to/crytic-assistant
+     export PATH=$PATH:/path/to/solidity-qa
      ```
    - On Windows, add the binary directory to your system's environment variables.
 
@@ -69,7 +69,7 @@ The `init` command generates a configuration file for a new audit project. You c
 #### Basic Usage
 
 ```bash
-crytic-assistant init
+solidity-qa init
 ```
 
 This will generate a configuration file called `assistant.json` in the current directory.
@@ -77,7 +77,7 @@ This will generate a configuration file called `assistant.json` in the current d
 #### With Options
 
 ```bash
-crytic-assistant init --out="config.json" --name="my-audit" --port="9000" --target-contracts-dir="./contracts" --test-contracts-dir="./tests"
+solidity-qa init --out="config.json" --name="my-audit" --port="9000" --target-contracts-dir="./contracts" --test-contracts-dir="./tests"
 ```
 
 This will generate a `config.json` file with custom project details.
@@ -97,19 +97,19 @@ Once the project has been initialized and the configuration file is populated, y
 #### Basic Usage
 
 ```bash
-crytic-assistant start
+solidity-qa start
 ```
 
 #### With Target Contracts Directory
 
 ```bash
-crytic-assistant start ./path/to/contracts
+solidity-qa start ./path/to/contracts
 ```
 
 #### With Options
 
 ```bash
-crytic-assistant start --config="config.json" --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
+solidity-qa start --config="config.json" --onchain --exclude-interfaces --address="0xABC123" --api-key="$ETHERSCAN_API_KEY"
 ```
 
 This will use the specified configuration file and spin up the session, fetching contract source code from Etherscan if the `onchain` flag is set.
@@ -159,7 +159,7 @@ In cases where you need to pass extra arguments to slither, the `slitherArgs` co
 - As command-line argument:
 
   ```bash
-  crytic-assistant start --slither-args='{ "compile_force_framework": "hardhat" }'
+  solidity-qa start --slither-args='{ "compile_force_framework": "hardhat" }'
   ```
 
 - In config:
@@ -176,4 +176,4 @@ In cases where you need to pass extra arguments to slither, the `slitherArgs` co
 
 ## License
 
-Crytic Assistant is released under the MIT License.
+Solidity-QA is released under the MIT License.
