@@ -3,18 +3,25 @@ package api
 import (
 	"assistant/config"
 	"assistant/logging"
+	"assistant/logging/colors"
 	"assistant/types"
+	"context"
 	"embed"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"golang.ngrok.com/ngrok"
+	ngrokConfig "golang.ngrok.com/ngrok/config"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
@@ -77,6 +84,7 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 
 	var listener net.Listener
 
+	// Set up local server
 	for i := 0; i < 10; i++ {
 		listener, err = net.Listen("tcp", port)
 		if err == nil {
@@ -89,11 +97,31 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 
 	// Stop further execution if the server failed to start
 	if listener == nil {
-		logger.Error("Failed to start server: ", err)
+		logger.Error("Failed to start local server: ", err)
 		return
 	}
 
-	logger.Info("Server started on port ", port[1:])
+	var remoteUrl string
+
+	// Host server using ngrok if specified in config
+	if projectConfig.Host {
+		logger.Info("Hosting server using ngrok")
+		remoteUrl, err = startNgrok(projectConfig.Port)
+		if err != nil {
+			logger.Error(err)
+			return
+		}
+	}
+
+	// Log server details
+	logger.Info("Server started successfully\n")
+	logger.Info("Local: http://localhost" + port)
+
+	if remoteUrl != "" {
+		logger.Info("Remote: ", remoteUrl)
+	} else {
+		logger.Info("Remote: Use ", colors.Green, "--host", colors.White, " or the ", colors.Green, "host", colors.White, " config option to host the server (requires the NGROK_AUTHTOKEN env variable)")
+	}
 
 	// Create a channel to receive interrupt signals
 	sigChan := make(chan os.Signal, 1)
@@ -125,6 +153,33 @@ func (api *API) Start(projectConfig *config.ProjectConfig) {
 	case err := <-serverErrorChan:
 		logger.Error("Server error: ", err)
 	}
+}
+
+// startNgrok starts a ngrok server listening to the server at port and returns the URL
+func startNgrok(port int) (string, error) {
+	// Obtain ngrok auth token
+	ngrokAuthtoken := os.Getenv("NGROK_AUTHTOKEN")
+	if ngrokAuthtoken == "" {
+		return "", fmt.Errorf("NGROK_AUTHTOKEN environment variable is not set")
+	}
+
+	localServerUrl, err := url.Parse("http://localhost:" + strconv.Itoa(port))
+	if err != nil {
+		return "", fmt.Errorf("unable to parse local server URL: %v", err)
+	}
+
+	// Create ngrok listener
+	ctx := context.Background()
+	listener, err := ngrok.ListenAndForward(ctx,
+		localServerUrl,
+		ngrokConfig.HTTPEndpoint(ngrokConfig.WithRequestHeader("ngrok-skip-browser-warning", "true")),
+		ngrok.WithAuthtokenFromEnv(),
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to create ngrok listener: %v", err)
+	}
+
+	return listener.URL(), nil
 }
 
 func (api *API) attachRoutes(router *mux.Router) error {

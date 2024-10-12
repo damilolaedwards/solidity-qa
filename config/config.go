@@ -50,6 +50,9 @@ type ProjectConfig struct {
 	// Port describes the port that the API will be running on
 	Port int `json:"port"`
 
+	// Host describes whether the API should be hosted using ngrok
+	Host bool `json:"host"`
+
 	// IncludeInterfaces describes whether interfaces will be included in the slither output
 	IncludeInterfaces bool `json:"includeInterfaces"`
 
