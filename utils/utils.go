@@ -36,3 +36,12 @@ func MapToDictString(inputMap map[string]any) string {
 	sb.WriteString("}")
 	return sb.String()
 }
+
+// SliceContains returns whether
+func SliceContains(arr []string, target string) bool {
+	m := make(map[string]bool)
+	for _, s := range arr {
+		m[s] = true
+	}
+	return m[target]
+}

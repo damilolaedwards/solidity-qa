@@ -10,6 +10,7 @@ func GetDefaultProjectConfig() (*ProjectConfig, error) {
 			Dir:          "",
 			ExcludePaths: []string{},
 		},
+		ContractWhitelist: []string{},
 		TestContracts: DirectoryConfig{
 			Dir:          "",
 			ExcludePaths: []string{},
