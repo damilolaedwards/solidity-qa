@@ -1,6 +1,8 @@
 # Solidity-QA
 
-**Solidity-QA** is a lightweight conversational AI code review tool designed to streamline the process of reviewing solidity codebases. It leverages on the use AI to scan and identify code smells and vulnerabilities in codebases as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs
+**Solidity-QA** is a lightweight conversational AI code review tool designed to streamline the process of reviewing solidity codebases. It leverages on the use AI to scan and identify code smells and vulnerabilities in codebases as well as generate comprehensive issue reports. With customizable configuration, it supports the use of both supports chatGPT and Claude APIs (VS Code extension coming soon....)
+
+![screenshot](./api/assets/public/img/demo.png)
 
 ## Features
 
